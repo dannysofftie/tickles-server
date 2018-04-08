@@ -13,13 +13,20 @@ async function verifyCaptcha(captcha, clientip) {
         post.end();
     });
 }
-async function confirmCredentials(req) {
-    return req.body;
+async function confirmCredentials(data) {
+    return data;
 }
-async function advertiserLogin(req) {
-    let captchaResult = await verifyCaptcha(req.body['g-recaptcha-response'], req.ip).then(data => data).catch(err => err);
+async function advertiserLogin(data) {
+    try {
+        // @ts-ignore
+        data = JSON.parse(data);
+    }
+    catch (e) {
+        return { error: 'invalid data provided' };
+    }
+    let captchaResult = await verifyCaptcha(data.captchaValue, data.ip).then(data => data).catch(err => err);
     if (JSON.parse(captchaResult.toString()).success)
-        return await confirmCredentials(req);
+        return await confirmCredentials(data);
     else
         return JSON.parse(captchaResult.toString()).success;
 }
