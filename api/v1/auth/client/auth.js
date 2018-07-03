@@ -4,12 +4,31 @@ const mongoose_1 = require("mongoose");
 const bcrypt = require("bcrypt");
 const Advertiser_1 = require("../../../../models/Advertiser");
 const send_email_1 = require("../../utils/send-email");
-async function confirmCredentials(username, password) {
-    return 0;
-}
 async function advertiserLogin(req, res) {
-    // email & password
-    return await confirmCredentials('', '');
+    let expectedKeys = ['emailaddress', 'password'], incomingKeys = Object.keys(req.body);
+    /**
+     * ensure incoming body contains all fields as expected
+     * @param {Array<string>} d expected keys
+     * @param {Array<string>} t incoming body keys
+     * @returns {boolean}
+     */
+    function ensureExpectedBody(d, t) {
+        return d.sort().every((a, b, c) => a.trim().toLowerCase() == t.sort()[b].trim().toLowerCase());
+    }
+    if (!ensureExpectedBody(expectedKeys, incomingKeys))
+        return res.status(res.statusCode).json({
+            error: 'REQ_BODY_ERROR',
+            expectedparams: expectedKeys,
+            providedparams: incomingKeys
+        });
+    let clientData = await Advertiser_1.default.find({ emailAddress: req.body['emailaddress'] }).select('password ssid').exec();
+    if (clientData.length < 1)
+        return res.status(res.statusCode).json({ error: 'NOT_FOUND' });
+    // @ts-ignore
+    if (!bcrypt.compareSync(req.body['password'], clientData[0].password))
+        return res.status(res.statusCode).json({ error: 'WRONG_PASS' });
+    // @ts-ignore
+    return res.status(res.statusCode).json({ ssid: clientData[0].ssid });
 }
 exports.advertiserLogin = advertiserLogin;
 async function advertiserSignUp(req, res) {
@@ -38,7 +57,7 @@ async function advertiserSignUp(req, res) {
         verificationCode: verificationCode,
         businessGroupTarget: req.body['businessgrouptarget']
     });
-    let emailCheck = await Advertiser_1.default.find({ emailAddress: req.body['emailaddress'] }).exec();
+    let emailCheck = await Advertiser_1.default.find({ emailAddress: req.body['emailaddress'] }).select('emailaddress').exec();
     if (emailCheck.length > 0)
         return res.status(res.statusCode).json({ error: 'EMAIL_EXISTS' });
     // @ts-ignore

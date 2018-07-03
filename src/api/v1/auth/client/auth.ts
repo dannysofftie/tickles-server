@@ -3,20 +3,36 @@ import * as bcrypt from 'bcrypt'
 import { Request, Response } from 'express'
 import Advertiser from '../../../../models/Advertiser'
 import { sendMail } from '../../utils/send-email'
-interface IAdvertiserCredentials {
-    captchaValue: string,
-    ip: string,
-    username: string,
-    password: string
-}
-
-async function confirmCredentials(username: string, password: string) {
-    return 0
-}
 
 export async function advertiserLogin(req: Request, res: Response) {
-    // email & password
-    return await confirmCredentials('', '')
+    let expectedKeys: Array<string> = ['emailaddress', 'password'],
+        incomingKeys: Array<string> = Object.keys(req.body)
+
+    /**
+     * ensure incoming body contains all fields as expected
+     * @param {Array<string>} d expected keys
+     * @param {Array<string>} t incoming body keys
+     * @returns {boolean}
+     */
+    function ensureExpectedBody(d: Array<string>, t: Array<string>): boolean {
+        return d.sort().every((a, b, c) => a.trim().toLowerCase() == t.sort()[b].trim().toLowerCase())
+    }
+    if (!ensureExpectedBody(expectedKeys, incomingKeys))
+        return res.status(res.statusCode).json({
+            error: 'REQ_BODY_ERROR',
+            expectedparams: expectedKeys,
+            providedparams: incomingKeys
+        })
+
+    let clientData = await Advertiser.find({ emailAddress: req.body['emailaddress'] }).select('password ssid').exec()
+    if (clientData.length < 1)
+        return res.status(res.statusCode).json({ error: 'NOT_FOUND' })
+    // @ts-ignore
+    if (!bcrypt.compareSync(req.body['password'], clientData[0].password))
+        return res.status(res.statusCode).json({ error: 'WRONG_PASS' })
+
+    // @ts-ignore
+    return res.status(res.statusCode).json({ ssid: clientData[0].ssid })
 }
 
 
@@ -54,7 +70,7 @@ export async function advertiserSignUp(req: Request, res: Response) {
             businessGroupTarget: req.body['businessgrouptarget']
         })
 
-    let emailCheck = await Advertiser.find({ emailAddress: req.body['emailaddress'] }).exec()
+    let emailCheck = await Advertiser.find({ emailAddress: req.body['emailaddress'] }).select('emailaddress').exec()
 
     if (emailCheck.length > 0)
         return res.status(res.statusCode).json({ error: 'EMAIL_EXISTS' })

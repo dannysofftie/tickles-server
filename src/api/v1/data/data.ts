@@ -31,7 +31,7 @@ export async function getBusinessCategories(req: Request, res: Response) {
         _id: new Types.ObjectId(),
         businessName: 'Services - other'
     }]).catch(e => e)
-    let docs= await BusinessCategories.find().select("_id businessName").exec()
+    let docs = await BusinessCategories.find().select("_id businessName").exec()
     res.status(res.statusCode).json(docs)
 }
 

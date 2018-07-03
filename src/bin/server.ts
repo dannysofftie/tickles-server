@@ -20,7 +20,7 @@ export class TicklesAdServer {
         this.app = express()
         this.server = createServer(this.app)
         this.ENV_CPUS = process.env.NODE_ENV === 'production' ? os.cpus().length : 1
-        this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test?retryWrites=true' : 'mongodb://127.0.0.1/project-adexchange'
+        this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test' : 'mongodb://127.0.0.1/project-adexchange'
         this.configs()
         this.routes()
     }
@@ -34,7 +34,7 @@ export class TicklesAdServer {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3')
             next()
         })
-        mongoose.connect(this.MONGO_URI)
+        mongoose.connect(this.MONGO_URI).catch(e => e)
     }
     private routes() {
         // handle authentication requests
@@ -49,7 +49,7 @@ export class TicklesAdServer {
         this.app.use('/api/v1/publish', require('../routes/publish-ads-routes'))
         // fallback for unhandled get requests
         this.app.get('*', (req, res) => {
-            res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Server only accepts requests from specific clients' }))
+            res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Invalid route' }))
         })
         // fallback for unhandled post requests
         this.app.post('*', (req, res) => {

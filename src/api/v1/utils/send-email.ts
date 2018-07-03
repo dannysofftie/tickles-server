@@ -11,8 +11,8 @@ export async function sendMail(to: string, message: string) {
     let transport = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
-            user: 'dankim761@gmail.com',
-            pass: '25812345'
+            user: 'noreply.adexchange@gmail.com',
+            pass: '25812345Dan'
         }
     })
     return await transport.sendMail({
