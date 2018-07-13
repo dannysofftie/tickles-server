@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const bcrypt = require("bcrypt");
-const Advertiser_1 = require("../../../../models/Advertiser");
+const Advertisers_1 = require("../../../../models/Advertisers");
 const send_email_1 = require("../../utils/send-email");
 async function advertiserLogin(req, res) {
     let expectedKeys = ['emailaddress', 'password'], incomingKeys = Object.keys(req.body);
@@ -21,7 +21,7 @@ async function advertiserLogin(req, res) {
             expectedparams: expectedKeys,
             providedparams: incomingKeys
         });
-    let clientData = await Advertiser_1.default.find({ emailAddress: req.body['emailaddress'] }).select('password ssid').exec();
+    let clientData = await Advertisers_1.default.find({ emailAddress: req.body['emailaddress'] }).select('password ssid').exec();
     if (clientData.length < 1)
         return res.status(res.statusCode).json({ error: 'NOT_FOUND' });
     // @ts-ignore
@@ -48,7 +48,7 @@ async function advertiserSignUp(req, res) {
             expectedparams: expectedKeys,
             providedparams: incomingKeys
         });
-    let SSID = Buffer.from(req.body['emailaddress'] + ':' + req.body['fullnames']).toString('base64'), hashPassword = await bcrypt.hashSync(req.body['password'], 8), verificationCode = (Number(new Date()) % 7e9).toString(29).toUpperCase(), advertiser = new Advertiser_1.default({
+    let SSID = Buffer.from(req.body['emailaddress'] + ':' + req.body['fullnames']).toString('base64'), hashPassword = await bcrypt.hashSync(req.body['password'], 8), verificationCode = (Number(new Date()) % 7e9).toString(29).toUpperCase(), advertiser = new Advertisers_1.default({
         _id: new mongoose_1.Types.ObjectId(),
         fullNames: req.body['fullnames'],
         emailAddress: req.body['emailaddress'],
@@ -57,7 +57,7 @@ async function advertiserSignUp(req, res) {
         verificationCode: verificationCode,
         businessGroupTarget: req.body['businessgrouptarget']
     });
-    let emailCheck = await Advertiser_1.default.find({ emailAddress: req.body['emailaddress'] }).select('emailaddress').exec();
+    let emailCheck = await Advertisers_1.default.find({ emailAddress: req.body['emailaddress'] }).select('emailaddress').exec();
     if (emailCheck.length > 0)
         return res.status(res.statusCode).json({ error: 'EMAIL_EXISTS' });
     // @ts-ignore

@@ -1,7 +1,7 @@
 import { Types } from 'mongoose'
 import * as bcrypt from 'bcrypt'
 import { Request, Response } from 'express'
-import Advertiser from '../../../../models/Advertiser'
+import Advertisers from '../../../../models/Advertisers'
 import { sendMail } from '../../utils/send-email'
 
 export async function advertiserLogin(req: Request, res: Response) {
@@ -24,7 +24,7 @@ export async function advertiserLogin(req: Request, res: Response) {
             providedparams: incomingKeys
         })
 
-    let clientData = await Advertiser.find({ emailAddress: req.body['emailaddress'] }).select('password ssid').exec()
+    let clientData = await Advertisers.find({ emailAddress: req.body['emailaddress'] }).select('password ssid').exec()
     if (clientData.length < 1)
         return res.status(res.statusCode).json({ error: 'NOT_FOUND' })
     // @ts-ignore
@@ -33,6 +33,7 @@ export async function advertiserLogin(req: Request, res: Response) {
 
     // @ts-ignore
     return res.status(res.statusCode).json({ ssid: clientData[0].ssid })
+
 }
 
 
@@ -60,7 +61,7 @@ export async function advertiserSignUp(req: Request, res: Response) {
     let SSID = Buffer.from(req.body['emailaddress'] + ':' + req.body['fullnames']).toString('base64'),
         hashPassword = await bcrypt.hashSync(req.body['password'], 8),
         verificationCode = (Number(new Date()) % 7e9).toString(29).toUpperCase(),
-        advertiser = new Advertiser({
+        advertiser = new Advertisers({
             _id: new Types.ObjectId(),
             fullNames: req.body['fullnames'],
             emailAddress: req.body['emailaddress'],
@@ -70,7 +71,7 @@ export async function advertiserSignUp(req: Request, res: Response) {
             businessGroupTarget: req.body['businessgrouptarget']
         })
 
-    let emailCheck = await Advertiser.find({ emailAddress: req.body['emailaddress'] }).select('emailaddress').exec()
+    let emailCheck = await Advertisers.find({ emailAddress: req.body['emailaddress'] }).select('emailaddress').exec()
 
     if (emailCheck.length > 0)
         return res.status(res.statusCode).json({ error: 'EMAIL_EXISTS' })

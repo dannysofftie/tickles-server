@@ -20,7 +20,7 @@ export class TicklesAdServer {
         this.app = express()
         this.server = createServer(this.app)
         this.ENV_CPUS = process.env.NODE_ENV === 'production' ? os.cpus().length : 1
-        this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test' : 'mongodb://127.0.0.1/project-adexchange'
+        this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test' : 'mongodb://127.0.0.1:27017/project-adexchange'
         this.configs()
         this.routes()
     }
@@ -34,7 +34,7 @@ export class TicklesAdServer {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3')
             next()
         })
-        mongoose.connect(this.MONGO_URI).catch(e => e)
+        mongoose.connect(this.MONGO_URI, { useNewUrlParser: true }).catch(e => e)
     }
     private routes() {
         // handle authentication requests

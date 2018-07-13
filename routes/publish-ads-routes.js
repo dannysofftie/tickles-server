@@ -2,7 +2,6 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const multer = require("multer");
-const publish_campaign_1 = require("../api/v1/data/publish-campaign");
 const router = express_1.Router(), upload = multer({
     storage: multer.diskStorage({
         destination: (req, file, cb) => {
@@ -21,6 +20,6 @@ const router = express_1.Router(), upload = multer({
     }
 });
 // manage campaign and ad publishing 
-router.post('/publish-campaign', publish_campaign_1.publishCampaign);
-router.post('/publish-ad', upload.single('adDisplayImage'), publish_campaign_1.publishAdvertisement);
+// router.post('/publish-campaign', publishCampaign)
+// router.post('/publish-ad', upload.single('adDisplayImage'), publishAdvertisement)
 module.exports = router;

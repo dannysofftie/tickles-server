@@ -1,36 +1,35 @@
 import { Schema, model } from 'mongoose'
 
 let Advertiser = new Schema({
-    _id: Schema.Types.ObjectId,
-    fullNames: {
+    _id: {
+        type: Schema.Types.ObjectId
+    }, fullNames: {
         type: String,
         required: true
-    },
-    emailAddress: {
+    }, emailAddress: {
         type: String,
         required: true,
         unique: true
-    },
-    password: {
+    }, password: {
         type: String,
         required: true
-    },
-    ssid: {
+    }, ssid: {
         type: String,
         required: true
-    },
-    verificationCode: {
+    }, verificationCode: {
         type: String,
         required: true
-    },
-    verified: {
+    }, verified: {
         type: Number,
         default: 0
-    },
-    businessGroupTarget: {
+    }, businessGroupTarget: {
         type: Schema.Types.ObjectId,
         ref: 'BusinessCategories'
+    }, accountBalance: {
+        type: Number,
+        required: false,
+        default: 0
     }
 })
 
-export default model('Advertiser', Advertiser)
+export default model('Advertisers', Advertiser)

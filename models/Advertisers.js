@@ -32,4 +32,4 @@ let Advertiser = new mongoose_1.Schema({
         default: 0
     }
 });
-exports.default = mongoose_1.model('Advertiser', Advertiser);
+exports.default = mongoose_1.model('Advertisers', Advertiser);
