@@ -83,6 +83,11 @@ export async function saveAdvertiserCampaign(req: Request, res: Response) {
 }
 
 export async function getAdvertiserDetails(req: Request, res: Response) {
+    let detailCheck = await AdvertiserTransactions.countDocuments({ advertiserReference: req['client']['client-ssid'] })
+    if(detailCheck < 1){
+        let advertiserDetails = await Advertisers.find({ ssid: req['client']['client-ssid'] }).exec()
+        return res.status(res.statusCode).json({ accountBalance: 0, fullNames: advertiserDetails[0]['fullNames'] })
+    }
     let details = await AdvertiserTransactions.find({ advertiserReference: req['client']['client-ssid'] })
         .select('paidAmount advertiserReference').populate({
             path: 'advertiser',
@@ -93,7 +98,7 @@ export async function getAdvertiserDetails(req: Request, res: Response) {
         // billings collection (to be created)
         fullNames = await details.map(doc => doc['advertiser']['fullNames']).reduce(a => a)
 
-    res.status(res.statusCode).json({ accountBalance, fullNames })
+    return res.status(res.statusCode).json({ accountBalance, fullNames })
 }
 
 export async function getAdvertiserAdvertisements(req: Request, res: Response) {
