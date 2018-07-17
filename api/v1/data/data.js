@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const BusinessCategories_1 = require("../../../models/BusinessCategories");
 const Campaigns_1 = require("../../../models/Campaigns");
+const Advertisers_1 = require("../../../models/Advertisers");
 const Advertisements_1 = require("../../../models/Advertisements");
 const AdvertiserTransactions_1 = require("../../../models/AdvertiserTransactions");
 async function getBusinessCategories(req, res) {
@@ -73,6 +74,11 @@ async function saveAdvertiserCampaign(req, res) {
 }
 exports.saveAdvertiserCampaign = saveAdvertiserCampaign;
 async function getAdvertiserDetails(req, res) {
+    let detailCheck = await AdvertiserTransactions_1.default.countDocuments({ advertiserReference: req['client']['client-ssid'] });
+    if (detailCheck < 1) {
+        let advertiserDetails = await Advertisers_1.default.find({ ssid: req['client']['client-ssid'] }).exec();
+        return res.status(res.statusCode).json({ accountBalance: 0, fullNames: advertiserDetails[0]['fullNames'] });
+    }
     let details = await AdvertiserTransactions_1.default.find({ advertiserReference: req['client']['client-ssid'] })
         .select('paidAmount advertiserReference').populate({
         path: 'advertiser',
@@ -81,7 +87,7 @@ async function getAdvertiserDetails(req, res) {
     // compute balance from accountBalance less billings from
     // billings collection (to be created)
     fullNames = await details.map(doc => doc['advertiser']['fullNames']).reduce(a => a);
-    res.status(res.statusCode).json({ accountBalance, fullNames });
+    return res.status(res.statusCode).json({ accountBalance, fullNames });
 }
 exports.getAdvertiserDetails = getAdvertiserDetails;
 async function getAdvertiserAdvertisements(req, res) {
