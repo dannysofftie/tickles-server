@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const BusinessCategories_1 = require("../../../models/BusinessCategories");
 const Campaigns_1 = require("../../../models/Campaigns");
-const Advertisers_1 = require("../../../models/Advertisers");
 const Advertisements_1 = require("../../../models/Advertisements");
+const AdvertiserTransactions_1 = require("../../../models/AdvertiserTransactions");
 async function getBusinessCategories(req, res) {
     await BusinessCategories_1.default.insertMany([{
             _id: new mongoose_1.Types.ObjectId(),
@@ -39,7 +39,9 @@ async function getBusinessCategories(req, res) {
 }
 exports.getBusinessCategories = getBusinessCategories;
 async function getAdvertiserCampaigns(req, res) {
-    let campaigns = await Campaigns_1.default.find({ advertiserReference: req.headers['client-ssid'] }).select('_id campaignName').exec();
+    // @ts-ignore 
+    // typings for collection.countDocuments() not implemented yet
+    let campaigns = await Campaigns_1.default.countDocuments({ advertiserReference: req.headers['client-ssid'] });
     res.status(res.statusCode).json(campaigns);
 }
 exports.getAdvertiserCampaigns = getAdvertiserCampaigns;
@@ -71,13 +73,21 @@ async function saveAdvertiserCampaign(req, res) {
 }
 exports.saveAdvertiserCampaign = saveAdvertiserCampaign;
 async function getAdvertiserDetails(req, res) {
-    let details = await Advertisers_1.default.find({ ssid: req.headers['client-ssid'] }).select('fullNames accountBalance -_id').exec();
-    res.status(res.statusCode).json(details);
+    let details = await AdvertiserTransactions_1.default.find({ advertiserReference: req['client']['client-ssid'] })
+        .select('paidAmount advertiserReference').populate({
+        path: 'advertiser',
+        select: 'fullNames'
+    }).exec(), accountBalance = await details.map(doc => doc['paidAmount']).reduce((a, b) => a + b), 
+    // compute balance from accountBalance less billings from
+    // billings collection (to be created)
+    fullNames = await details.map(doc => doc['advertiser']['fullNames']).reduce(a => a);
+    res.status(res.statusCode).json({ accountBalance, fullNames });
 }
 exports.getAdvertiserDetails = getAdvertiserDetails;
 async function getAdvertiserAdvertisements(req, res) {
-    // console.log(req.headers['client-ssid'])
-    res.status(res.statusCode).json([]);
+    // @ts-ignore
+    let advertiserAds = await Advertisements_1.default.countDocuments({ advertiserReference: req['client']['client-ssid'] });
+    res.status(res.statusCode).json(advertiserAds);
 }
 exports.getAdvertiserAdvertisements = getAdvertiserAdvertisements;
 async function saveAdvertiserAd(req, res) {
@@ -93,7 +103,6 @@ async function saveAdvertiserAd(req, res) {
         advertiserReference: req['client']['client-ssid'],
         adValidationTime: req['client']['validation-time']
     }), saveResult = await advert.save().catch(err => err);
-    console.log(saveResult);
     if (saveResult.toString().indexOf('ValidationError') != -1)
         return res.status(res.statusCode).json({ message: 'INVALID' });
     return res.status(res.statusCode).json({ message: 'SUCCESS' });

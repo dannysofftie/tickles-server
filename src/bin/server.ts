@@ -42,11 +42,9 @@ export class TicklesAdServer {
         // handle data requests
         this.app.use('/api/v1/data', require('../routes/data-routes'))
         // handle requests to publisher content, including serving ads to publisher websites and other online apps
-        this.app.use('/api/v1/pub-content', require('../routes/pub-routes'))
+        this.app.use('/api/v1/checkout', require('../routes/checkout-routes'))
         // handle ad views, impressions and clicks
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'))
-        // handle ad and campaign publishing
-        this.app.use('/api/v1/publish', require('../routes/publish-ads-routes'))
         // fallback for unhandled get requests
         this.app.get('*', (req, res) => {
             res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Invalid route' }))

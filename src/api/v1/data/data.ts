@@ -1,10 +1,10 @@
 import { Types } from 'mongoose'
 import { Request, Response } from 'express'
-import * as util from 'util'
 import BusinessCategories from '../../../models/BusinessCategories'
 import Campaigns from '../../../models/Campaigns'
 import Advertisers from '../../../models/Advertisers'
 import Advertisements from '../../../models/Advertisements'
+import AdvertiserTransactions from '../../../models/AdvertiserTransactions';
 
 export async function getBusinessCategories(req: Request, res: Response) {
     await BusinessCategories.insertMany([{
@@ -42,8 +42,9 @@ export async function getBusinessCategories(req: Request, res: Response) {
 }
 
 export async function getAdvertiserCampaigns(req: Request, res: Response) {
-
-    let campaigns = await Campaigns.find({ advertiserReference: req.headers['client-ssid'] }).select('_id campaignName').exec()
+    // @ts-ignore 
+    // typings for collection.countDocuments() not implemented yet
+    let campaigns = await Campaigns.countDocuments({ advertiserReference: req.headers['client-ssid'] })
 
     res.status(res.statusCode).json(campaigns)
 }
@@ -82,13 +83,24 @@ export async function saveAdvertiserCampaign(req: Request, res: Response) {
 }
 
 export async function getAdvertiserDetails(req: Request, res: Response) {
-    let details = await Advertisers.find({ ssid: req.headers['client-ssid'] }).select('fullNames accountBalance -_id').exec()
-    res.status(res.statusCode).json(details)
+    let details = await AdvertiserTransactions.find({ advertiserReference: req['client']['client-ssid'] })
+        .select('paidAmount advertiserReference').populate({
+            path: 'advertiser',
+            select: 'fullNames'
+        }).exec(),
+        accountBalance = await details.map(doc => doc['paidAmount']).reduce((a, b) => a + b),
+        // compute balance from accountBalance less billings from
+        // billings collection (to be created)
+        fullNames = await details.map(doc => doc['advertiser']['fullNames']).reduce(a => a)
+
+    res.status(res.statusCode).json({ accountBalance, fullNames })
 }
 
 export async function getAdvertiserAdvertisements(req: Request, res: Response) {
-    // console.log(req.headers['client-ssid'])
-    res.status(res.statusCode).json([])
+    // @ts-ignore
+    let advertiserAds = await Advertisements.countDocuments({ advertiserReference: req['client']['client-ssid'] })
+
+    res.status(res.statusCode).json(advertiserAds)
 }
 
 export async function saveAdvertiserAd(req: Request, res: Response) {
@@ -105,7 +117,7 @@ export async function saveAdvertiserAd(req: Request, res: Response) {
         adValidationTime: req['client']['validation-time']
     }),
         saveResult = await advert.save().catch(err => err)
-    console.log(saveResult)
+
     if (saveResult.toString().indexOf('ValidationError') != -1)
         return res.status(res.statusCode).json({ message: 'INVALID' })
     return res.status(res.statusCode).json({ message: 'SUCCESS' })
