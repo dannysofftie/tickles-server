@@ -64,6 +64,8 @@ class Checkout {
             })
         })().catch(err => err)
 
+        console.log('Create status: ', createStatus)
+
         let urlChecker: RegExp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
         if (urlChecker.test(createStatus) != true)
             return ({ message: 'failed', reason: createStatus })
@@ -81,6 +83,8 @@ class Checkout {
             })
         })().catch(err => err)
 
+        console.log('Payment response: ', paymentResponse)
+        
         if (paymentResponse.toString().includes('Error'))
             return ({ error: 'server_error' })
 
@@ -107,7 +111,7 @@ class Checkout {
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }))
 
-        console.log(paymentResponse, paymentInfo)
+        console.log(paymentResponse)
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' })
         return ({ message: 'success' })
@@ -165,6 +169,5 @@ export async function checkoutPayPal(req: Request, res: Response) {
 
 export async function receivePaypalPayment(req: Request, res: Response) {
     let response = await new Checkout().receivePaypalPayment(req)
-    console.dir(response)
     return res.redirect(cancelUrl)
 }

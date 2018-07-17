@@ -76,6 +76,7 @@ class Checkout {
                 });
             });
         })().catch(err => err);
+        console.log('Create status: ', createStatus);
         let urlChecker = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
         if (urlChecker.test(createStatus) != true)
             return ({ message: 'failed', reason: createStatus });
@@ -91,6 +92,7 @@ class Checkout {
                 });
             });
         })().catch(err => err);
+        console.log('Payment response: ', paymentResponse);
         if (paymentResponse.toString().includes('Error'))
             return ({ error: 'server_error' });
         const paymentData = {
@@ -114,6 +116,7 @@ class Checkout {
             advertiserReference: paymentData['advertiserReference'],
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }));
+        console.log(paymentResponse);
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' });
         return ({ message: 'success' });
@@ -161,7 +164,6 @@ async function checkoutPayPal(req, res) {
 exports.checkoutPayPal = checkoutPayPal;
 async function receivePaypalPayment(req, res) {
     let response = await new Checkout().receivePaypalPayment(req);
-    console.dir(response);
     return res.redirect(cancelUrl);
 }
 exports.receivePaypalPayment = receivePaypalPayment;

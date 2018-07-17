@@ -13,14 +13,13 @@ const cluster = require("cluster");
 const cors = require("cors");
 const express = require("express");
 const http_1 = require("http");
-const os = require("os");
 const mongoose = require("mongoose");
 class TicklesAdServer {
     constructor() {
         this.PORT = process.env.PORT || 5000;
         this.app = express();
         this.server = http_1.createServer(this.app);
-        this.ENV_CPUS = process.env.NODE_ENV === 'production' ? os.cpus().length : 1;
+        this.ENV_CPUS = 1;
         this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test' : 'mongodb://127.0.0.1:27017/project-adexchange';
         this.configs();
         this.routes();

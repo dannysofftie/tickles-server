@@ -74,6 +74,7 @@ async function saveAdvertiserCampaign(req, res) {
 }
 exports.saveAdvertiserCampaign = saveAdvertiserCampaign;
 async function getAdvertiserDetails(req, res) {
+    // @ts-ignore
     let detailCheck = await AdvertiserTransactions_1.default.countDocuments({ advertiserReference: req['client']['client-ssid'] });
     if (detailCheck < 1) {
         let advertiserDetails = await Advertisers_1.default.find({ ssid: req['client']['client-ssid'] }).exec();
