@@ -107,6 +107,7 @@ class Checkout {
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }))
 
+        console.log(paymentResponse, paymentInfo)
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' })
         return ({ message: 'success' })
