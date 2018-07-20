@@ -33,14 +33,14 @@ export function validateRequests(req: Request, res: Response, next: NextFunction
 }
 
 
-export async function validateAdDestinationUrl(req: Request, res: Response) {
+export async function validateWebsiteUrl(req: Request, res: Response) {
 
     let addresses: {} | string
     const ip = /^(?:(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(\.(?!$)|$)){4}$/
-    if (ip.test(req.body['adDestinationUrl']) != false)
+    if (ip.test(req.body['url']) != false)
         addresses = await (async function () {
             return new Promise(function (resolve, reject) {
-                dns.reverse(req.body['adDestinationUrl'], function (err, hostnames) {
+                dns.reverse(req.body['url'], function (err, hostnames) {
                     err ? reject(err) : resolve(hostnames)
                 })
             })
@@ -48,7 +48,7 @@ export async function validateAdDestinationUrl(req: Request, res: Response) {
     else
         addresses = await (async function () {
             return new Promise(function (resolve, reject) {
-                dns.lookup(req.body['adDestinationUrl'], function (err, address) {
+                dns.lookup(req.body['url'], function (err, address) {
                     err ? reject(err) : resolve(address)
                 })
             })
@@ -79,7 +79,7 @@ export async function validateAdDestinationUrl(req: Request, res: Response) {
  * An email is sent to advertiser indicating verification status 
  */
 export async function adVerificationUtility(req: Request, res: Response) {
-    let allUnverifiedAds = await Advertisements.find({adVerificationStatus: false}).exec()
+    let allUnverifiedAds = await Advertisements.find({ adVerificationStatus: false }).exec()
     for await (const ad of allUnverifiedAds) {
         // do the logic here
     }

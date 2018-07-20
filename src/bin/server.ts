@@ -5,8 +5,8 @@ import * as cluster from 'cluster';
 import * as cors from 'cors';
 import * as express from 'express';
 import { createServer, Server } from 'http';
-import * as os from 'os';
 import * as mongoose from 'mongoose'
+import * as cookieParser from 'cookie-parser'
 
 export class TicklesAdServer {
     private app: express.Application
@@ -27,9 +27,10 @@ export class TicklesAdServer {
 
     private configs() {
         this.app.disable('x-powered-by')
+        this.app.use(cors())
         this.app.use(bodyParser.urlencoded({ extended: true }))
         this.app.use(bodyParser.json())
-        this.app.use(cors())
+        this.app.use(cookieParser())
         this.app.use((req, res, next) => {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3')
             next()

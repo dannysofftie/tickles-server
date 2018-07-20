@@ -1,9 +1,8 @@
 import { Request, Response } from 'express'
 import * as stripe from 'stripe'
 import * as paypal from 'paypal-rest-sdk'
-import { promisify } from 'util';
-import AdvertiserTransactions from '../../../models/AdvertiserTransactions';
-import { Types } from 'mongoose';
+import AdvertiserTransactions from '../../../models/AdvertiserTransactions'
+import { Types } from 'mongoose'
 
 const production = process.env.NODE_ENV === 'production',
     returnUrl = production ? 'https://adxserver.herokuapp.com/api/v1/checkout/payment-wallet' : 'http://127.0.0.1:5000/api/v1/checkout/payment-wallet',
@@ -27,6 +26,7 @@ class Checkout {
      * @param req request object
      */
     public async checkoutPayPal(req: Request) {
+        console.log(req.body)
         paypal.configure({
             mode: 'sandbox',
             client_id: 'AfMhLAlCW3r0T0lakRSSqIq6NF_KlhqCktwU2FGkn8F9AapoWpDI5llCiS-oIxKW33YjLYahCtp6bzpJ',
@@ -49,7 +49,7 @@ class Checkout {
                             currency: 'USD',
                             total: req.body['top-up-amount']
                         },
-                        description: 'Advertiser account fund top-up'
+                        description: 'Advertiser account fund top up'
                     }]
                 }, async (_err, _response) => {
                     if (_err)
@@ -63,8 +63,7 @@ class Checkout {
                 })
             })
         })().catch(err => err)
-
-        console.log('Create status: ', createStatus)
+        console.log(createStatus)
 
         let urlChecker: RegExp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
         if (urlChecker.test(createStatus) != true)
@@ -83,8 +82,6 @@ class Checkout {
             })
         })().catch(err => err)
 
-        console.log('Payment response: ', paymentResponse)
-        
         if (paymentResponse.toString().includes('Error'))
             return ({ error: 'server_error' })
 
@@ -111,7 +108,6 @@ class Checkout {
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }))
 
-        console.log(paymentResponse)
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' })
         return ({ message: 'success' })

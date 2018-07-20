@@ -23,5 +23,5 @@ router.post('/save-campaign', verify_1.validateRequests, data_1.saveAdvertiserCa
 router.get('/advertiser-details', verify_1.validateRequests, data_1.getAdvertiserDetails);
 router.post('/save-campaignad', upload.single('adDisplayImage'), verify_1.validateRequests, data_1.saveAdvertiserAd);
 router.get('/get-advertiser-ads', verify_1.validateRequests, data_1.getAdvertiserAdvertisements);
-router.post('/validate-url', verify_1.validateRequests, verify_1.validateAdDestinationUrl);
+router.post('/validate-url', verify_1.validateRequests, verify_1.validateWebsiteUrl);
 module.exports = router;

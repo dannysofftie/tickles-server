@@ -30,6 +30,7 @@ class Checkout {
      * @param req request object
      */
     async checkoutPayPal(req) {
+        console.log(req.body);
         paypal.configure({
             mode: 'sandbox',
             client_id: 'AfMhLAlCW3r0T0lakRSSqIq6NF_KlhqCktwU2FGkn8F9AapoWpDI5llCiS-oIxKW33YjLYahCtp6bzpJ',
@@ -51,7 +52,7 @@ class Checkout {
                                 currency: 'USD',
                                 total: req.body['top-up-amount']
                             },
-                            description: 'Advertiser account fund top-up'
+                            description: 'Advertiser account fund top up'
                         }]
                 }, async (_err, _response) => {
                     var e_1, _a;
@@ -76,7 +77,7 @@ class Checkout {
                 });
             });
         })().catch(err => err);
-        console.log('Create status: ', createStatus);
+        console.log(createStatus);
         let urlChecker = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/;
         if (urlChecker.test(createStatus) != true)
             return ({ message: 'failed', reason: createStatus });
@@ -92,7 +93,6 @@ class Checkout {
                 });
             });
         })().catch(err => err);
-        console.log('Payment response: ', paymentResponse);
         if (paymentResponse.toString().includes('Error'))
             return ({ error: 'server_error' });
         const paymentData = {
@@ -116,7 +116,6 @@ class Checkout {
             advertiserReference: paymentData['advertiserReference'],
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }));
-        console.log(paymentResponse);
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' });
         return ({ message: 'success' });

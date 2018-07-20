@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { getBusinessCategories, getAdvertiserCampaigns, saveAdvertiserAd, saveAdvertiserCampaign, getAdvertiserDetails, getAdvertiserAdvertisements } from '../api/v1/data/data'
 import * as multer from 'multer'
-import { validateAdDestinationUrl, validateRequests } from '../api/v1/verify'
+import { validateWebsiteUrl, validateRequests } from '../api/v1/verify'
 import * as path from 'path'
 import { randomBytes } from 'crypto'
 
@@ -31,6 +31,6 @@ router.post('/save-campaignad', upload.single('adDisplayImage'), validateRequest
 
 router.get('/get-advertiser-ads', validateRequests, getAdvertiserAdvertisements)
 
-router.post('/validate-url', validateRequests, validateAdDestinationUrl)
+router.post('/validate-url', validateRequests, validateWebsiteUrl)
 
 module.exports = router

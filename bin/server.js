@@ -14,6 +14,7 @@ const cors = require("cors");
 const express = require("express");
 const http_1 = require("http");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
 class TicklesAdServer {
     constructor() {
         this.PORT = process.env.PORT || 5000;
@@ -26,9 +27,10 @@ class TicklesAdServer {
     }
     configs() {
         this.app.disable('x-powered-by');
+        this.app.use(cors());
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(bodyParser.json());
-        this.app.use(cors());
+        this.app.use(cookieParser());
         this.app.use((req, res, next) => {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3');
             next();

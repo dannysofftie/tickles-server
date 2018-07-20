@@ -24,13 +24,13 @@ function validateRequests(req, res, next) {
     return next();
 }
 exports.validateRequests = validateRequests;
-async function validateAdDestinationUrl(req, res) {
+async function validateWebsiteUrl(req, res) {
     let addresses;
     const ip = /^(?:(25[0-5]|2[0-4][0-9]|1[0-9][0-9]|[1-9][0-9]|[0-9])(\.(?!$)|$)){4}$/;
-    if (ip.test(req.body['adDestinationUrl']) != false)
+    if (ip.test(req.body['url']) != false)
         addresses = await (async function () {
             return new Promise(function (resolve, reject) {
-                dns.reverse(req.body['adDestinationUrl'], function (err, hostnames) {
+                dns.reverse(req.body['url'], function (err, hostnames) {
                     err ? reject(err) : resolve(hostnames);
                 });
             });
@@ -38,7 +38,7 @@ async function validateAdDestinationUrl(req, res) {
     else
         addresses = await (async function () {
             return new Promise(function (resolve, reject) {
-                dns.lookup(req.body['adDestinationUrl'], function (err, address) {
+                dns.lookup(req.body['url'], function (err, address) {
                     err ? reject(err) : resolve(address);
                 });
             });
@@ -47,7 +47,7 @@ async function validateAdDestinationUrl(req, res) {
         return res.status(res.statusCode).json({ status: false });
     return res.status(res.statusCode).json({ status: true });
 }
-exports.validateAdDestinationUrl = validateAdDestinationUrl;
+exports.validateWebsiteUrl = validateWebsiteUrl;
 /**
  * This utility will be called automatically after every 2 hours,
  * it runs all unverified ad documents in the database, through a verification
