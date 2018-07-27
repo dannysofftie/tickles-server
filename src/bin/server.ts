@@ -8,6 +8,7 @@ import { createServer, Server } from 'http'
 import * as mongoose from 'mongoose'
 import * as cookieParser from 'cookie-parser'
 import * as path from 'path'
+import { existsSync, readFile, createReadStream } from 'fs';
 
 export class TicklesAdServer {
     private app: express.Application
@@ -36,11 +37,11 @@ export class TicklesAdServer {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3')
             next()
         })
-        this.app.use(express.static(path.join(__dirname, '../', 'public')))
         mongoose.connect(this.MONGO_URI, { useNewUrlParser: true }).catch(e => e)
     }
 
     private routes() {
+
         // handle authentication requests
         this.app.use('/api/v1/auth', require('../routes/auth-routes'))
         // handle data requests
@@ -51,9 +52,38 @@ export class TicklesAdServer {
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'))
         // handle ad views, impressions and clicks
         this.app.use('/srv/ads', require('../routes/ad-impression-routes'))
+
+        // handler for static resources
+        this.app.get(/static|resources/, (req, res) => {
+            let rootPath = path.join(__dirname, '../' + req.url), mimeType = Object.create({
+                '.js': 'text/javascript',
+                '.css': 'text/css',
+                '.html': 'text/html'
+            })
+            console.log(rootPath)
+            existsSync(path.resolve(rootPath)) ? (function () {
+                readFile(path.resolve(rootPath), (err, data) => {
+                    err ? (function () {
+                        res.writeHead(500, 'Internal server error', { 'Content-Type': 'text/plain' })
+                        res.end()
+                    })() : (function () {
+                        if (path.extname(rootPath) == '.html')
+                            createReadStream(rootPath).pipe(res)
+                        else {
+                            res.writeHead(200, { 'Content-Type': mimeType[path.extname(rootPath)] })
+                            res.end(data)
+                        }
+                    })()
+                })
+            })() : (function () {
+                res.writeHead(404, 'Ruquested file not found')
+                res.end()
+            })()
+        })
+
         // fallback for unhandled get requests
         this.app.get('*', (req, res) => {
-            res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Invalid route' }))
+            res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Invalid endpoint' }))
         })
         // fallback for unhandled post requests
         this.app.post('*', (req, res) => {
