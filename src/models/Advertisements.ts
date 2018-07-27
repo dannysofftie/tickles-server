@@ -1,4 +1,4 @@
-import { Schema, model, NativeDate } from 'mongoose'
+import { Schema, model } from 'mongoose'
 
 let Advertisements = new Schema({
     _id: {
@@ -50,18 +50,8 @@ let Advertisements = new Schema({
         type: String,
         required: false
     }
-})
+}, { toObject: { virtuals: true } })
+
 
 export default model('Advertisements', Advertisements)
 
-/*
-{
-  adName: '',
-  adTitle: '',
-  adCampaignCategory: '',
-  adDestinationUrl: 'twitter.com',
-  adSelectedType: 'image',
-  adDisplayImage: 'undefined',
-  adDescription: ''
- }
-*/

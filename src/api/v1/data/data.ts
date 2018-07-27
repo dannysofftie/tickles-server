@@ -44,7 +44,7 @@ export async function getBusinessCategories(req: Request, res: Response) {
 export async function getAdvertiserCampaigns(req: Request, res: Response) {
     // @ts-ignore 
     // typings for collection.countDocuments() not implemented yet
-    let campaigns = await Campaigns.countDocuments({ advertiserReference: req.headers['client-ssid'] })
+    let campaigns = await Campaigns.find({ advertiserReference: req.headers['client-ssid'] })
 
     res.status(res.statusCode).json(campaigns)
 }

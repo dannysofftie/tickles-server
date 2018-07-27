@@ -48,20 +48,21 @@ let Campaigns = new Schema({
         type: String,
         ref: 'Advertiser'
     }
+}, { toObject: { virtuals: true } })
+
+Campaigns.virtual('campaignBsCategories', {
+    localField: 'businessCategory',
+    foreignField: '_id',
+    ref: 'BusinessCategories',
+    justOne: true
 })
 
-export default model('Campaigns', Campaigns)
+Campaigns.virtual('campaignAdvertisements', {
+    localField: '_id',
+    foreignField: 'adCampaignCategory',
+    ref: 'Advertisements',
+    justOne: false
+})
 
-/*
-{ campaignName: 'Advertisements',
-  campaignEstimatedBudget: '20',
-  campaignBidPerAd: '2',
-  campaignBeginDate: '07/04/2018',
-  campaignEndDate: '07/26/2018',
-  campaignTargetLocations: '1',
-  campaignTargetMobile: 'on',
-  campaignTargetTablets: 'on',
-  campaignTargetDesktop: 'on',
-  campaignCategory: '5b39d9e9f4c01a44adb4de3c',
-  campaignBannedDomains: 'banned.net' } 
-*/
+
+export default model('Campaigns', Campaigns)

@@ -42,7 +42,7 @@ exports.getBusinessCategories = getBusinessCategories;
 async function getAdvertiserCampaigns(req, res) {
     // @ts-ignore 
     // typings for collection.countDocuments() not implemented yet
-    let campaigns = await Campaigns_1.default.countDocuments({ advertiserReference: req.headers['client-ssid'] });
+    let campaigns = await Campaigns_1.default.find({ advertiserReference: req.headers['client-ssid'] });
     res.status(res.statusCode).json(campaigns);
 }
 exports.getAdvertiserCampaigns = getAdvertiserCampaigns;

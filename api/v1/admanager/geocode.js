@@ -10,8 +10,13 @@ async function locationGeocode(req, res, next) {
     ip2location.IP2Location_init(path.join(__dirname, '../', '../', '../', 'tracer/IP2LOCATION-LITE-DB5.IPV6.BIN'));
     // find a way to obtain public ip address,
     // pass the public ip to ip database for location search
-    const result = await ip2location.IP2Location_get_all(req.ip);
-    console.log(result, req['client-session'], req.headers);
+    try {
+        const result = await ip2location.IP2Location_get_all(req.ip);
+        req['client-session']['client-location'] = result;
+    }
+    catch (_a) {
+        req['client-session']['client-location'] = false;
+    }
     return next(); // pass request to ad serving utility
 }
 exports.locationGeocode = locationGeocode;

@@ -31,5 +31,11 @@ let Advertiser = new mongoose_1.Schema({
         required: false,
         default: 0
     }
+}, { toObject: { virtuals: true } });
+Advertiser.virtual('advertiserCampaigns', {
+    localField: 'ssid',
+    foreignField: 'advertiserReference',
+    ref: 'Campaigns',
+    justOne: false
 });
 exports.default = mongoose_1.model('Advertisers', Advertiser);

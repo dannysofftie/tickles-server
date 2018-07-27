@@ -51,16 +51,5 @@ let Advertisements = new mongoose_1.Schema({
         type: String,
         required: false
     }
-});
+}, { toObject: { virtuals: true } });
 exports.default = mongoose_1.model('Advertisements', Advertisements);
-/*
-{
-  adName: '',
-  adTitle: '',
-  adCampaignCategory: '',
-  adDestinationUrl: 'twitter.com',
-  adSelectedType: 'image',
-  adDisplayImage: 'undefined',
-  adDescription: ''
- }
-*/ 

@@ -54,7 +54,8 @@
     "@types/nodemailer": "^4.6.2",
     "@types/paypal-rest-sdk": "^1.7.2",
     "@types/stripe": "^5.0.18",
-    "@types/ws": "^4.0.2"
+    "@types/ws": "^4.0.2",
+    "dotenv": "^6.0.0"
   },
   "engines": {
     "node": "10.6.0"

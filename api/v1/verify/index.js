@@ -43,8 +43,13 @@ async function validateWebsiteUrl(req, res) {
                 });
             });
         })().catch(err => (err));
-    if (addresses.toString().indexOf('Error') != -1)
+    try {
+        if (addresses.toString().indexOf('Error') != -1)
+            return res.status(res.statusCode).json({ status: false });
+    }
+    catch (_a) {
         return res.status(res.statusCode).json({ status: false });
+    }
     return res.status(res.statusCode).json({ status: true });
 }
 exports.validateWebsiteUrl = validateWebsiteUrl;

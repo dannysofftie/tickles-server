@@ -53,9 +53,12 @@ export async function validateWebsiteUrl(req: Request, res: Response) {
                 })
             })
         })().catch(err => (err))
-
-    if (addresses.toString().indexOf('Error') != -1)
+    try {
+        if (addresses.toString().indexOf('Error') != -1)
+            return res.status(res.statusCode).json({ status: false })
+    } catch  {
         return res.status(res.statusCode).json({ status: false })
+    }
     return res.status(res.statusCode).json({ status: true })
 
 }

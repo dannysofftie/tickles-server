@@ -8,6 +8,7 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+require('dotenv').config();
 const bodyParser = require("body-parser");
 const cluster = require("cluster");
 const cors = require("cors");
@@ -15,19 +16,20 @@ const express = require("express");
 const http_1 = require("http");
 const mongoose = require("mongoose");
 const cookieParser = require("cookie-parser");
+const path = require("path");
 class TicklesAdServer {
     constructor() {
         this.PORT = process.env.PORT || 5000;
         this.app = express();
         this.server = http_1.createServer(this.app);
         this.ENV_CPUS = 1;
-        this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test' : 'mongodb://127.0.0.1:27017/project-adexchange';
+        this.MONGO_URI = process.env.MONGO_URI;
         this.configs();
         this.routes();
     }
     configs() {
         this.app.disable('x-powered-by');
-        this.app.use(cors());
+        this.app.use(cors({ origin: true, credentials: true, preflightContinue: true }));
         this.app.use(bodyParser.urlencoded({ extended: true }));
         this.app.use(bodyParser.json());
         this.app.use(cookieParser());
@@ -35,6 +37,7 @@ class TicklesAdServer {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3');
             next();
         });
+        this.app.use(express.static(path.join(__dirname, '../', 'public')));
         mongoose.connect(this.MONGO_URI, { useNewUrlParser: true }).catch(e => e);
     }
     routes() {
@@ -44,8 +47,10 @@ class TicklesAdServer {
         this.app.use('/api/v1/data', require('../routes/data-routes'));
         // handle requests to publisher content, including serving ads to publisher websites and other online apps
         this.app.use('/api/v1/checkout', require('../routes/checkout-routes'));
-        // handle ad views, impressions and clicks
+        // handle ad requests from publisher sites
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'));
+        // handle ad views, impressions and clicks
+        this.app.use('/srv/ads', require('../routes/ad-impression-routes'));
         // fallback for unhandled get requests
         this.app.get('*', (req, res) => {
             res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Invalid route' }));

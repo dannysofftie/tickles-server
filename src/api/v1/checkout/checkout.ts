@@ -1,3 +1,4 @@
+require('dotenv').config()
 import { Request, Response } from 'express'
 import * as stripe from 'stripe'
 import * as paypal from 'paypal-rest-sdk'
@@ -29,8 +30,8 @@ class Checkout {
         console.log(req.body)
         paypal.configure({
             mode: 'sandbox',
-            client_id: 'AfMhLAlCW3r0T0lakRSSqIq6NF_KlhqCktwU2FGkn8F9AapoWpDI5llCiS-oIxKW33YjLYahCtp6bzpJ',
-            client_secret: 'EAijNzwin9wOMii_ZAZkEs3uJ8QP-s62E5lsMjoO073PgQMh7OJ1pkXVHD0cJZI9DCrR-qe9Tp1FZwzT'
+            client_id: process.env.PAYPAL_CLIENT_ID,
+            client_secret: process.env.PAYPAL_CLIENT_SECRET
         })
 
         let createStatus = await (async () => {
@@ -63,7 +64,6 @@ class Checkout {
                 })
             })
         })().catch(err => err)
-        console.log(createStatus)
 
         let urlChecker: RegExp = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/
         if (urlChecker.test(createStatus) != true)
@@ -110,6 +110,8 @@ class Checkout {
 
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' })
+
+        // update advertiser account balance after paypal complete
         return ({ message: 'success' })
     }
     /**
@@ -164,6 +166,6 @@ export async function checkoutPayPal(req: Request, res: Response) {
 }
 
 export async function receivePaypalPayment(req: Request, res: Response) {
-    let response = await new Checkout().receivePaypalPayment(req)
+    await new Checkout().receivePaypalPayment(req)
     return res.redirect(cancelUrl)
 }

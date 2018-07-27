@@ -1,12 +1,13 @@
 #!/usr/bin/env node
-
-import * as bodyParser from 'body-parser';
-import * as cluster from 'cluster';
-import * as cors from 'cors';
-import * as express from 'express';
-import { createServer, Server } from 'http';
+require('dotenv').config()
+import * as bodyParser from 'body-parser'
+import * as cluster from 'cluster'
+import * as cors from 'cors'
+import * as express from 'express'
+import { createServer, Server } from 'http'
 import * as mongoose from 'mongoose'
 import * as cookieParser from 'cookie-parser'
+import * as path from 'path'
 
 export class TicklesAdServer {
     private app: express.Application
@@ -20,14 +21,14 @@ export class TicklesAdServer {
         this.app = express()
         this.server = createServer(this.app)
         this.ENV_CPUS = 1
-        this.MONGO_URI = process.env.NODE_ENV === 'production' ? 'mongodb+srv://dannysofftie:25812345Dan@project-adexchange-bftmj.gcp.mongodb.net/test' : 'mongodb://127.0.0.1:27017/project-adexchange'
+        this.MONGO_URI = process.env.MONGO_URI
         this.configs()
         this.routes()
     }
 
     private configs() {
         this.app.disable('x-powered-by')
-        this.app.use(cors())
+        this.app.use(cors({ origin: true, credentials: true, preflightContinue: true }))
         this.app.use(bodyParser.urlencoded({ extended: true }))
         this.app.use(bodyParser.json())
         this.app.use(cookieParser())
@@ -35,8 +36,10 @@ export class TicklesAdServer {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3')
             next()
         })
+        this.app.use(express.static(path.join(__dirname, '../', 'public')))
         mongoose.connect(this.MONGO_URI, { useNewUrlParser: true }).catch(e => e)
     }
+
     private routes() {
         // handle authentication requests
         this.app.use('/api/v1/auth', require('../routes/auth-routes'))
@@ -44,8 +47,10 @@ export class TicklesAdServer {
         this.app.use('/api/v1/data', require('../routes/data-routes'))
         // handle requests to publisher content, including serving ads to publisher websites and other online apps
         this.app.use('/api/v1/checkout', require('../routes/checkout-routes'))
-        // handle ad views, impressions and clicks
+        // handle ad requests from publisher sites
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'))
+        // handle ad views, impressions and clicks
+        this.app.use('/srv/ads', require('../routes/ad-impression-routes'))
         // fallback for unhandled get requests
         this.app.get('*', (req, res) => {
             res.status(400).end(JSON.stringify({ error: 400, message: 'Bad request', info: 'Invalid route' }))

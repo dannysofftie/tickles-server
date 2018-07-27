@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import { extractRequestCookies } from "../utils/originCookies"
+import Publisher from '../../../models/Publisher';
 
 interface T {
     Edge: RegExp,
@@ -35,7 +36,7 @@ interface B {
  */
 class SessionBuilder {
     public async requestSessionBuilder(req: Request) {
-        const cookies: {} = await extractRequestCookies(req['headers']['cookie']),
+        const cookies: {} = await extractRequestCookies(req.headers.cookie),
             userAgent: string = <string>req['headers']['user-agent'],
             browserVersions: T = {
                 Edge: /(?:edge|edga|edgios)\/([\d\w\.\-]+)/i,
@@ -143,9 +144,12 @@ class SessionBuilder {
             'client-device': getDevice(),
             'client-browser': getBroswer(),
             'client-browser-version': getBrowserVersion(),
-            'client-operating-system': getOperatingSytem()
+            'client-operating-system': getOperatingSytem(),
+            'site-visited': req.hostname,
+            'site-section': req.originalUrl,
+            'site-current-url': req.hostname + req.originalUrl
         }
-        req['session'] = requestSession
+        req['client-session'] = requestSession
         return
     }
 
@@ -170,7 +174,10 @@ class SessionBuilder {
  * @param res server Response object
  */
 export async function requestSessionBuilder(req: Request, res: Response, next: NextFunction) {
-    await new SessionBuilder().requestSessionBuilder(req)
-    // return after session duilder exits
-    return next()
+    await new SessionBuilder().requestSessionBuilder(req).catch(e => req['client-session'] = false)
+    // confirm site registration
+    // let pubCheck = await Publisher.find({ publisherAppUrl: req['client-session']['site-visited'] }).select('publisherAppUrl').exec()
+    // if (pubCheck.length < 1)
+    //     return res.end()
+    return next()  // forward to the next utility after build complete
 }

@@ -12,7 +12,7 @@ const originCookies_1 = require("../utils/originCookies");
  */
 class SessionBuilder {
     async requestSessionBuilder(req) {
-        const cookies = await originCookies_1.extractRequestCookies(req['headers']['cookie']), userAgent = req['headers']['user-agent'], browserVersions = {
+        const cookies = await originCookies_1.extractRequestCookies(req.headers.cookie), userAgent = req['headers']['user-agent'], browserVersions = {
             Edge: /(?:edge|edga|edgios)\/([\d\w\.\-]+)/i,
             Firefox: /(?:firefox|fxios)\/([\d\w\.\-]+)/i,
             IE: /msie\s([\d\.]+[\d])|trident\/\d+\.\d+;.*[rv:]+(\d+\.\d)/i,
@@ -108,9 +108,12 @@ class SessionBuilder {
             'client-device': getDevice(),
             'client-browser': getBroswer(),
             'client-browser-version': getBrowserVersion(),
-            'client-operating-system': getOperatingSytem()
+            'client-operating-system': getOperatingSytem(),
+            'site-visited': req.hostname,
+            'site-section': req.originalUrl,
+            'site-current-url': req.hostname + req.originalUrl
         };
-        req['session'] = requestSession;
+        req['client-session'] = requestSession;
         return;
     }
     adClickSessionBuilder(req) {
@@ -128,8 +131,11 @@ class SessionBuilder {
  * @param res server Response object
  */
 async function requestSessionBuilder(req, res, next) {
-    await new SessionBuilder().requestSessionBuilder(req);
-    // return after session duilder exits
-    return next();
+    await new SessionBuilder().requestSessionBuilder(req).catch(e => req['client-session'] = false);
+    // confirm site registration
+    // let pubCheck = await Publisher.find({ publisherAppUrl: req['client-session']['site-visited'] }).select('publisherAppUrl').exec()
+    // if (pubCheck.length < 1)
+    //     return res.end()
+    return next(); // forward to the next utility after build complete
 }
 exports.requestSessionBuilder = requestSessionBuilder;

@@ -30,6 +30,13 @@ let Advertiser = new Schema({
         required: false,
         default: 0
     }
+}, { toObject: { virtuals: true } })
+
+Advertiser.virtual('advertiserCampaigns', {
+    localField: 'ssid',
+    foreignField: 'advertiserReference',
+    ref: 'Campaigns',
+    justOne: false
 })
 
 export default model('Advertisers', Advertiser)
