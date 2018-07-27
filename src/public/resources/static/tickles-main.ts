@@ -20,12 +20,6 @@
      * Ad space generator
      */
     Tickles.prototype.init = function (_e: string) {
-        // let l = document.createElement('link'),
-        //     h = document.head
-        // l.type = 'text/css'
-        // l.rel = 'stylesheet/css'
-        // l.href = this.b + '/resources/static/tickles-main.css'
-        // h.appendChild(l)
         var l = document.createElement('link')
         l.setAttribute('rel', 'stylesheet')
         l.setAttribute('href', this.b + '/resources/static/tickles-main.css')
