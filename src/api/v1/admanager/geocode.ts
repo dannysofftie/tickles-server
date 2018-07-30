@@ -15,7 +15,7 @@ export async function locationGeocode(req: Request, res: Response, next: NextFun
   try {
     const result = await ip2location.IP2Location_get_all(req.ip)
 
-    req['client-session']['client-location'] = result
-  } catch{ req['client-session']['client-location'] = false }
+    req['client-location'] = result
+  } catch{ req['client-location'] = false }
   return next() // pass request to ad serving utility
 }

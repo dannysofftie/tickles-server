@@ -36,6 +36,7 @@ class TicklesAdServer {
         this.app.use(cookieParser());
         this.app.use((req, res, next) => {
             res.setHeader('X-Powered-By', 'Go-langV1.10.3');
+            // res.setHeader('X-Frame-Options', 'SAMEORIGIN') // disable viewing in iframe
             next();
         });
         mongoose.connect(this.MONGO_URI, { useNewUrlParser: true }).catch(e => e);
@@ -50,7 +51,7 @@ class TicklesAdServer {
         // handle ad requests from publisher sites
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'));
         // handle ad views, impressions and clicks
-        this.app.use('/srv/ads', require('../routes/ad-impression-routes'));
+        this.app.use('/srv/cnb', require('../routes/ad-impression-routes'));
         // handler for static resources
         this.app.get(/static|resources/, (req, res) => {
             let rootPath = path.join(__dirname, '../' + req.url), mimeType = Object.create({
@@ -58,7 +59,6 @@ class TicklesAdServer {
                 '.css': 'text/css',
                 '.html': 'text/html'
             });
-            console.log(rootPath);
             fs_1.existsSync(path.resolve(rootPath)) ? (function () {
                 fs_1.readFile(path.resolve(rootPath), (err, data) => {
                     err ? (function () {

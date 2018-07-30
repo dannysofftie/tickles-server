@@ -12,10 +12,10 @@ async function locationGeocode(req, res, next) {
     // pass the public ip to ip database for location search
     try {
         const result = await ip2location.IP2Location_get_all(req.ip);
-        req['client-session']['client-location'] = result;
+        req['client-location'] = result;
     }
     catch (_a) {
-        req['client-session']['client-location'] = false;
+        req['client-location'] = false;
     }
     return next(); // pass request to ad serving utility
 }

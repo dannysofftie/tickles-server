@@ -74,14 +74,9 @@
             advertiserReference
             id : "5b4902e437456e21c93da043"
         */
+        document.cookie = 'name={67890342rhnfm8hxw3:"rftgbyhnjmefdfbhi"};';
         let url = `${this.b + this.s}/click/${window.location.host.split('/')[0]}/${new Date().toISOString()}/${this.m.id}/${this.m.adDestinationUrl}`;
-        let adSection = `
-           <a href=${url} target='_blank'
-            style="position: absolute; bottom: 20px; right: 10px; width:120px; height: 180px; border: 1px solid rgba(0,0,0,0.4); background-color=blue">
-                <div>${this.m.adName}</div>
-           </a>
-       `;
-        this.z.innerHTML = adSection;
+        this.z.innerHTML = `<iframe src="http://127.0.0.1:5000/static/html/index.html" height=${this.z.style.height} width=${this.z.style.width} frameborder="0"></iframe>`;
     };
     return Tickles;
 })));
