@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-require('dotenv').config()
+if (process.env.NODE_ENV != 'production')
+    require('dotenv').config()
 import * as bodyParser from 'body-parser'
 import * as cluster from 'cluster'
 import * as cors from 'cors'

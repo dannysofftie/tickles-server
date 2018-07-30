@@ -8,7 +8,8 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
     function settle(resolve, reject, d, v) { Promise.resolve(v).then(function(v) { resolve({ value: v, done: d }); }, reject); }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-require('dotenv').config();
+if (process.env.NODE_ENV != 'production')
+    require('dotenv').config();
 const bodyParser = require("body-parser");
 const cluster = require("cluster");
 const cors = require("cors");

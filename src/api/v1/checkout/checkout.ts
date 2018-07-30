@@ -1,4 +1,5 @@
-require('dotenv').config()
+if (process.env.NODE_ENV != 'production')
+    require('dotenv').config()
 import { Request, Response } from 'express'
 import * as stripe from 'stripe'
 import * as paypal from 'paypal-rest-sdk'
