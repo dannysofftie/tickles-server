@@ -32,6 +32,11 @@ const Publishers = new Schema({
     businessCategory: {
         type: Schema.Types.ObjectId,
         required: false
+    },
+    allowedMinimumBid: {
+        type: Number,
+        required: false,
+        default: 0.0
     }
 }, { toObject: { virtuals: true } })
 

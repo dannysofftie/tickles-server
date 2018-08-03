@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
-import { extractRequestCookies } from "../utils/originCookies"
-import Publisher from '../../../models/Publisher';
+import { extractRequestCookies } from "../utils/origin-cookies"
+import Publisher from '../../../models/Publisher'
 
 interface T {
     Edge: RegExp,

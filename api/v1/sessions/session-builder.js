@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const originCookies_1 = require("../utils/originCookies");
+const origin_cookies_1 = require("../utils/origin-cookies");
 /**
  * @description Session builder middleware for all requests tunneling from publisher sites & apps.
  * Handles:
@@ -12,7 +12,7 @@ const originCookies_1 = require("../utils/originCookies");
  */
 class SessionBuilder {
     async requestSessionBuilder(req) {
-        const cookies = await originCookies_1.extractRequestCookies(req.headers.cookie), userAgent = req['headers']['user-agent'], browserVersions = {
+        const cookies = await origin_cookies_1.extractRequestCookies(req.headers.cookie), userAgent = req['headers']['user-agent'], browserVersions = {
             Edge: /(?:edge|edga|edgios)\/([\d\w\.\-]+)/i,
             Firefox: /(?:firefox|fxios)\/([\d\w\.\-]+)/i,
             IE: /msie\s([\d\.]+[\d])|trident\/\d+\.\d+;.*[rv:]+(\d+\.\d)/i,

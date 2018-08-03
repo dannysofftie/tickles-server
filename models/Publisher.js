@@ -33,6 +33,11 @@ const Publishers = new mongoose_1.Schema({
     businessCategory: {
         type: mongoose_1.Schema.Types.ObjectId,
         required: false
+    },
+    allowedMinimumBid: {
+        type: Number,
+        required: false,
+        default: 0.0
     }
 }, { toObject: { virtuals: true } });
 Publishers.virtual('pubbusiness', {

@@ -1,5 +1,30 @@
 "use strict";
-function adRequest(url) {
+/*
+
+MIT License
+
+Copyright (c) 2018 Danny Sofftie
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+*/
+function q(url) {
     return new Promise(function (resolve, reject) {
         let i = new XMLHttpRequest();
         i.open('GET', url, true);
@@ -30,10 +55,12 @@ function f(s, a) {
     return e;
 }
 const h = window.location.origin.includes('127.0.0.1') ?
-    'http://127.0.0.1:5000/srv/cnb/impression' : 'https://adxserver.herokuapp.com/';
-document.addEventListener('DOMContentLoaded', function () {
-    document.body.addEventListener('click', function (e) {
-        console.log(e.x, e.y, document.cookie, window.innerHeight);
+    'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com', height = document.body.clientHeight, width = document.body.clientWidth;
+document.addEventListener('DOMContentLoaded', async function () {
+    let adData = await q(h + '/api/v1/cnb/addata?height=' + height + '&width=' + width);
+    console.log(adData);
+    document.body.addEventListener('click', async function (e) {
+        let addata = await q(h + '/api/v1/impression/click');
     });
     document.querySelector('.close').addEventListener('click', function () {
         document.body.style.opacity = '0';

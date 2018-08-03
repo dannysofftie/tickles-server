@@ -53,7 +53,7 @@ export class TicklesAdServer {
         // handle ad requests from publisher sites
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'))
         // handle ad views, impressions and clicks
-        this.app.use('/srv/cnb', require('../routes/ad-impression-routes'))
+        this.app.use('/api/v1/impression', require('../routes/ad-impression-routes'))
 
         // handler for static resources
         this.app.get(/static|resources/, (req, res) => {
@@ -72,7 +72,7 @@ export class TicklesAdServer {
                             createReadStream(rootPath).pipe(res)
                         else {
                             res.writeHead(200, { 'Content-Type': mimeType[path.extname(rootPath)] })
-                            res.end(data)
+                            createReadStream(rootPath).pipe(res)
                         }
                     })()
                 })

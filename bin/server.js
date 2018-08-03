@@ -52,7 +52,7 @@ class TicklesAdServer {
         // handle ad requests from publisher sites
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'));
         // handle ad views, impressions and clicks
-        this.app.use('/srv/cnb', require('../routes/ad-impression-routes'));
+        this.app.use('/api/v1/impression', require('../routes/ad-impression-routes'));
         // handler for static resources
         this.app.get(/static|resources/, (req, res) => {
             let rootPath = path.join(__dirname, '../' + req.url), mimeType = Object.create({
@@ -70,7 +70,7 @@ class TicklesAdServer {
                             fs_1.createReadStream(rootPath).pipe(res);
                         else {
                             res.writeHead(200, { 'Content-Type': mimeType[path.extname(rootPath)] });
-                            res.end(data);
+                            fs_1.createReadStream(rootPath).pipe(res);
                         }
                     })();
                 });
