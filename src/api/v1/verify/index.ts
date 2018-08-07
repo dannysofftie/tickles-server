@@ -6,6 +6,8 @@
 import { Request, Response, NextFunction } from 'express'
 import * as dns from 'dns'
 import Advertisements from '../../../models/Advertisements';
+import Publisher from '../../../models/Publisher';
+import { extractRequestCookies } from '../utils/origin-cookies';
 
 export function validateRequests(req: Request, res: Response, next: NextFunction) {
 
@@ -61,6 +63,18 @@ export async function validateWebsiteUrl(req: Request, res: Response) {
     }
     return res.status(res.statusCode).json({ status: true })
 
+}
+
+/**
+ * Verify publisher before delivering an ad
+ */
+export async function verifyPublisher(req: Request, res: Response, next: NextFunction) {
+    let pubSite = extractRequestCookies(req.headers.cookie, 'original-url'),
+        pubData = await Publisher.find({ publisherAppUrl: pubSite }).select('publisherAppUrl').exec()
+
+    if (pubData.length > 0)
+        return next()
+    return res.end()
 }
 
 /**

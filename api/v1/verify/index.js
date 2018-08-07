@@ -9,6 +9,8 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const dns = require("dns");
 const Advertisements_1 = require("../../../models/Advertisements");
+const Publisher_1 = require("../../../models/Publisher");
+const origin_cookies_1 = require("../utils/origin-cookies");
 function validateRequests(req, res, next) {
     if (req.headers['client-ssid'] == undefined) {
         return res.status(500).json({ error: 'unauthorized', info: 'missing credentials' });
@@ -53,6 +55,16 @@ async function validateWebsiteUrl(req, res) {
     return res.status(res.statusCode).json({ status: true });
 }
 exports.validateWebsiteUrl = validateWebsiteUrl;
+/**
+ * Verify publisher before delivering an ad
+ */
+async function verifyPublisher(req, res, next) {
+    let pubSite = origin_cookies_1.extractRequestCookies(req.headers.cookie, 'original-url'), pubData = await Publisher_1.default.find({ publisherAppUrl: pubSite }).select('publisherAppUrl').exec();
+    if (pubData.length > 0)
+        return next();
+    return res.end();
+}
+exports.verifyPublisher = verifyPublisher;
 /**
  * This utility will be called automatically after every 2 hours,
  * it runs all unverified ad documents in the database, through a verification
