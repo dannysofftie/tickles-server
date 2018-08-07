@@ -66,6 +66,10 @@ class AdBuilder {
                 }
             ]
         }, { suggestedAds: 1 }).populate('suggestedAds');
+        if (visitorSession.length < 1) {
+            // serve company ad data
+            return this.response.status(200).json({});
+        }
         // visitorSession is an array of arrays, flatten into a single array
         let proposedAds = visitorSession.map(doc => doc['suggestedAds']).reduce((a, b) => a.concat(b), []), proposedAdsIds = proposedAds.map(doc => doc['_id']), previoulsyServedAds = await ClientAdInteractions_1.default.aggregate([{
                 $match: {

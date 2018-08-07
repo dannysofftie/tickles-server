@@ -68,6 +68,11 @@ class AdBuilder {
                 }]
         }, { suggestedAds: 1 }).populate('suggestedAds')
 
+        if (visitorSession.length < 1) {
+            // serve company ad data
+            return this.response.status(200).json({})
+        }
+        
         // visitorSession is an array of arrays, flatten into a single array
         let proposedAds: Array<Document> = visitorSession.map(doc => doc['suggestedAds']).reduce((a, b) => a.concat(b), []),
             proposedAdsIds: Array<string> = proposedAds.map(doc => doc['_id']),
