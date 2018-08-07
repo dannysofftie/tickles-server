@@ -23,6 +23,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
+const host = window.location.origin.includes('127.0.0.1') ?
+    'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com',
+    height: number = document.body.clientHeight,
+    width: number = document.body.clientWidth
 
 function q(url: string) {
     return new Promise(function (resolve, reject) {
@@ -57,25 +61,84 @@ function f(s: string | Array<string>, a?: string) {
     return e
 }
 
-const h = window.location.origin.includes('127.0.0.1') ?
-    'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com',
-    height: number = document.body.clientHeight,
-    width: number = document.body.clientWidth
+function v(elem: HTMLElement) {
+    let rect = elem.getBoundingClientRect()
+    return rect.bottom > 0 && rect.right > 0 &&
+        rect.left < (window.innerWidth || document.documentElement.clientWidth) &&
+        rect.top < (window.innerHeight || document.documentElement.clientHeight)
+}
+
+function r() {
+    let k = Math.floor(Math.random() * 30)
+    return k > 20 && k < 30 ? k : r()
+}
+
+function notify(elem: HTMLElement, sessionId?: string) {
+    let cn: number = 0
+    setInterval(() => { z() }, 2000)
+    function z() {
+        if (v(elem)) {
+            cn += 2
+        }
+        if (cn >= r()) {
+            cn = 0
+            l(true, sessionId)
+        }
+    }
+}
+
+async function l(view?: boolean, visSession?: string) {
+    let adDataUrl: string = host + '/api/v1/cnb/addata?height=' + height + '&width=' + width
+    if (typeof view != 'undefined') {
+        adDataUrl += '&impression=view&visitorSessionId=' + visSession
+    }
+    (<HTMLElement>document.querySelector('div.preloader')).style.display = 'flex'
+    let adData = await q(adDataUrl),
+        parent = document.querySelector('div.ad-elements'),
+        mdiClass: Array<string> = ['mdi-loading', 'mdi-chevron-double-right', 'mdi-history']
+
+    let container: string = `<a href="${host + '/tickles/ads/impression/click/' + adData['visitorInstanceId'] + '/'
+        + adData['adDestinationUrl'] + '/' + adData['advertiserReference']}" data-click="click" target="_blank" class="ad-parent-section animated fadeInDown">`
+
+    if (adData['adSelectedType'] == 'image') {
+        // build ad data with image
+    } else if (adData['adSelectedType'] == 'text') {
+        // build ad data with text display only
+    }
+    if (adData['adDisplayImage'] != 'null') {
+        container += `<div class="display-image">
+                        <img src="${adData['adDisplayImage']}">
+                    </div>`
+    }
+    container += `<div class="ad-name"> <p> ${adData['adName']} <br>  <small>${adData['adTitle']}</small> </p> </div>`
+    container += `<div class="description-text">
+                    <p>${adData['adDescription']}</p>
+                </div>`
+    container += `<div class="instructions">
+                    <button class="feature-button" style="background-color: ${adData['preferredTheme']}">${adData['displayText']} &nbsp;
+                        <span class="mdi ${mdiClass[Math.floor(Math.random() * mdiClass.length)]} animated flash"></span>
+                    </button>
+                  </div>`
+    container += `</a>`
+
+    parent.innerHTML = container
+    let target = <HTMLElement>document.querySelector('a.ad-parent-section')
+    target.addEventListener('click', async function (e) {
+        if (this.getAttribute('data-click') != 'click') {
+            e.preventDefault()
+        }
+    })
+
+    setTimeout(() => {
+        (<HTMLElement>document.querySelector('div.preloader')).style.display = 'none'
+        if (adData['adName'] != undefined)
+            notify(target, adData['visitorInstanceId'])
+    }, 400)
+}
 
 document.addEventListener('DOMContentLoaded', async function () {
-
-    let adData = await q(h + '/api/v1/cnb/addata?height=' + height + '&width=' + width)
-
-    console.log(adData)
-
-    document.body.addEventListener('click', async function (e) {
-        let addata = await q(h + '/api/v1/impression/click')
-    })
-
+    l()
     document.querySelector('.close').addEventListener('click', function () {
         document.body.style.opacity = '0'
-
     })
-    // determine the size of the window innerHeight to control ad image size that is requested from server
-
 })
