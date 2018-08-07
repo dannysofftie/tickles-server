@@ -33,7 +33,10 @@ var __asyncValues = (this && this.__asyncValues) || function (o) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const Publisher_1 = require("../../../models/Publisher");
+const mongoose_1 = require("mongoose");
 const Advertisers_1 = require("../../../models/Advertisers");
+const PublisherAdSession_1 = require("../../../models/PublisherAdSession");
+const origin_cookies_1 = require("../utils/origin-cookies");
 class AdDataSession {
     constructor(req, res) {
         this.device = req['client-session']['client-device'];
@@ -71,9 +74,50 @@ class AdDataSession {
      */
     async generateDesktopAd(data) {
         // build desktop ad and respond with build status
-        // use 'data' passed to complete session, which will be used during subsequent requests
-        // for ad data, to be served to the client
-        this.response.status(200).json({ status: true });
+        // use 'data' passed to complete session, which will be used during subsequent requests for ad data, to be served to the client
+        try {
+            // reuse existing session data 
+            // for sessions created in the past two day
+            let sessionId = origin_cookies_1.extractRequestCookies(this.request.headers.cookie, 'tickles-session');
+            if (sessionId != undefined) {
+                let existingSession = await PublisherAdSession_1.default.aggregate([
+                    {
+                        $match: {
+                            $and: [
+                                {
+                                    visitorSessionId: { $eq: sessionId }
+                                }, {
+                                    sessionDate: { $gte: new Date(new Date().getTime() - 2 * 24 * 60 * 60 * 1000) }
+                                }
+                            ]
+                        }
+                    },
+                    { $project: { visitorSessionId: 1, _id: 0 } }
+                ]);
+                // update suggestedAds array to give priority to new ads under 
+                // the same businessCatgeroy as the publisher making request
+                PublisherAdSession_1.default.findOneAndUpdate({ visitorSessionId: { $eq: sessionId } }, { $set: { suggestedAds: data } }).exec();
+                this.response.cookie('tickles-session', existingSession[0]['visitorSessionId'], { httpOnly: true, maxAge: 2 * 24 * 60 * 60 * 1000 });
+                return this.response.status(200).json({ status: true, ref: existingSession[0]['visitorSessionId'] });
+            }
+        }
+        catch (_a) { }
+        // create new session data
+        let pubSession = new PublisherAdSession_1.default({
+            _id: new mongoose_1.Types.ObjectId(),
+            clientIpAddress: this.request['client-session']['client-ip'],
+            visitorSessionId: Buffer.from(this.request['client-session']['site-visited'] + '||' + this.request['client-session']['client-ip']).toString('base64'),
+            incomingUrl: this.request['client-session']['site-visited'],
+            incomingUrlPath: this.request['client-session']['site-section'],
+            clientCookies: this.request['client-session']['client-cookies'],
+            clientDevice: this.request['client-session']['client-device'],
+            clientBrowser: this.request['client-session']['client-browser'],
+            clientBrowserVersion: this.request['client-session']['client-browser-version'],
+            clientOperatingSystem: this.request['client-session']['client-operating-system'],
+            suggestedAds: data
+        }), sessionStatus = await pubSession.save().then(doc => doc['visitorSessionId']).catch(err => []);
+        this.response.cookie('tickles-session', sessionStatus, { httpOnly: true });
+        return this.response.status(200).json({ status: true, ref: sessionStatus });
     }
     /**
      * smartphone devices ad generator
@@ -84,8 +128,7 @@ class AdDataSession {
      */
     async generateMobileAd(data) {
         // build desktop ad and respond with build status
-        // use 'data' passed to complete session, which will be used during subsequent requests
-        // for ad data, to be served to the client
+        // use 'data' passed to complete session, which will be used during subsequent requests for ad data, to be served to the client
         this.response.status(200).json({ status: true });
     }
     /**
@@ -179,20 +222,20 @@ class AdDataSession {
             return await filterUnservedAds(affiliatesCampaigns);
         async function filterUnservedAds(mixedAds) {
             var e_2, _a, e_3, _b;
-            let allAdCampaigns = mixedAds.map(doc => doc['advertiserCampaigns']), allAds = [], allFilteredAds = [];
-            if (allAdCampaigns.length < 1 || allAdCampaigns[0] == null) {
+            let allCampaignsAds = mixedAds.map(doc => doc['advertiserCampaigns']), allAds = [], allFilteredAds = [];
+            if (allCampaignsAds.length < 1 || allCampaignsAds[0] == null) {
                 return [];
             }
             try {
-                for (var allAdCampaigns_1 = __asyncValues(allAdCampaigns), allAdCampaigns_1_1; allAdCampaigns_1_1 = await allAdCampaigns_1.next(), !allAdCampaigns_1_1.done;) {
-                    const doc = allAdCampaigns_1_1.value;
+                for (var allCampaignsAds_1 = __asyncValues(allCampaignsAds), allCampaignsAds_1_1; allCampaignsAds_1_1 = await allCampaignsAds_1.next(), !allCampaignsAds_1_1.done;) {
+                    const doc = allCampaignsAds_1_1.value;
                     doc.map(value => allAds.push(value['campaignAdvertisements']));
                 }
             }
             catch (e_2_1) { e_2 = { error: e_2_1 }; }
             finally {
                 try {
-                    if (allAdCampaigns_1_1 && !allAdCampaigns_1_1.done && (_a = allAdCampaigns_1.return)) await _a.call(allAdCampaigns_1);
+                    if (allCampaignsAds_1_1 && !allCampaignsAds_1_1.done && (_a = allCampaignsAds_1.return)) await _a.call(allCampaignsAds_1);
                 }
                 finally { if (e_2) throw e_2.error; }
             }

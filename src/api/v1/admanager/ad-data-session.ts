@@ -26,9 +26,11 @@ SOFTWARE.
 
 import { Request, Response } from 'express'
 import Publisher from '../../../models/Publisher'
-import { Document } from 'mongoose'
+import { Document, Types, Schema } from 'mongoose'
 import Advertisers from '../../../models/Advertisers'
 import { writeFileSync } from 'fs';
+import PublisherAdSession from '../../../models/PublisherAdSession';
+import { extractRequestCookies } from '../utils/origin-cookies';
 
 class AdDataSession {
     private device: string
@@ -67,16 +69,60 @@ class AdDataSession {
 
     /**
      * desktop devices, large screen monitors
-     * @param data - specifications:      
+     * @param data - specifications:  
      *     -  raw data with ads, as found using request details, including device size, ip address
      *     -  incoming request's publisher business category group and other specification
      * @returns {boolean} - build status
      */
     private async generateDesktopAd(data: Array<string> | {}) {
+
         // build desktop ad and respond with build status
-        // use 'data' passed to complete session, which will be used during subsequent requests
-        // for ad data, to be served to the client
-        this.response.status(200).json({ status: true })
+        // use 'data' passed to complete session, which will be used during subsequent requests for ad data, to be served to the client
+
+        try {
+            // reuse existing session data 
+            // for sessions created in the past two day
+            let sessionId = extractRequestCookies(this.request.headers.cookie, 'tickles-session')
+            if (sessionId != undefined) {
+                let existingSession = await PublisherAdSession.aggregate([
+                    {
+                        $match: {
+                            $and: [
+                                {
+                                    visitorSessionId: { $eq: sessionId }
+                                }, {
+                                    sessionDate: { $gte: new Date(new Date().getTime() - 2 * 24 * 60 * 60 * 1000) }
+                                }]
+                        }
+                    },
+                    { $project: { visitorSessionId: 1, _id: 0 } }
+                ])
+                // update suggestedAds array to give priority to new ads under 
+                // the same businessCatgeroy as the publisher making request
+                PublisherAdSession.findOneAndUpdate({ visitorSessionId: { $eq: sessionId } }, { $set: { suggestedAds: data } }).exec()
+                this.response.cookie('tickles-session', existingSession[0]['visitorSessionId'], { httpOnly: true, maxAge: 2 * 24 * 60 * 60 * 1000 })
+                return this.response.status(200).json({ status: true, ref: existingSession[0]['visitorSessionId'] })
+            }
+        } catch{ }
+
+        // create new session data
+        let pubSession = new PublisherAdSession({
+            _id: new Types.ObjectId(),
+            clientIpAddress: this.request['client-session']['client-ip'],
+            visitorSessionId: Buffer.from(this.request['client-session']['site-visited'] + '||' + this.request['client-session']['client-ip']).toString('base64'),
+            incomingUrl: this.request['client-session']['site-visited'],
+            incomingUrlPath: this.request['client-session']['site-section'],
+            clientCookies: this.request['client-session']['client-cookies'],
+            clientDevice: this.request['client-session']['client-device'],
+            clientBrowser: this.request['client-session']['client-browser'],
+            clientBrowserVersion: this.request['client-session']['client-browser-version'],
+            clientOperatingSystem: this.request['client-session']['client-operating-system'],
+            suggestedAds: data
+        }),
+            sessionStatus = await pubSession.save().then(doc => doc['visitorSessionId']).catch(err => [])
+
+        this.response.cookie('tickles-session', sessionStatus, { httpOnly: true })
+        return this.response.status(200).json({ status: true, ref: sessionStatus })
     }
 
     /**
@@ -88,8 +134,7 @@ class AdDataSession {
      */
     private async generateMobileAd(data: Array<string> | {}) {
         // build desktop ad and respond with build status
-        // use 'data' passed to complete session, which will be used during subsequent requests
-        // for ad data, to be served to the client
+        // use 'data' passed to complete session, which will be used during subsequent requests for ad data, to be served to the client
         this.response.status(200).json({ status: true })
     }
 
@@ -180,15 +225,15 @@ class AdDataSession {
             return await filterUnservedAds(affiliatesCampaigns)
 
         async function filterUnservedAds(mixedAds: Array<Document>) {
-            let allAdCampaigns: Array<Array<Document>> = mixedAds.map(doc => doc['advertiserCampaigns']),
+            let allCampaignsAds: Array<Array<Document>> = mixedAds.map(doc => doc['advertiserCampaigns']),
                 allAds: Array<Array<Document>> = [],
                 allFilteredAds: Array<Document> = []
 
-            if (allAdCampaigns.length < 1 || allAdCampaigns[0] == null) {
+            if (allCampaignsAds.length < 1 || allCampaignsAds[0] == null) {
                 return []
             }
 
-            for await (const doc of allAdCampaigns) {
+            for await (const doc of allCampaignsAds) {
                 doc.map(value => allAds.push(value['campaignAdvertisements']))
             }
             for await (const doc of allAds) {
