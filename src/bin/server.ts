@@ -53,14 +53,15 @@ export class TicklesAdServer {
         // handle ad requests from publisher sites
         this.app.use('/api/v1/cnb', require('../routes/ads-routes'))
         // handle ad views, impressions and clicks
-        this.app.use('/api/v1/impression', require('../routes/ad-impression-routes'))
+        this.app.use('/tickles/ads/impression', require('../routes/ad-impression-routes'))
 
         // handler for static resources
         this.app.get(/static|resources/, (req, res) => {
             let rootPath = path.join(__dirname, '../' + req.url), mimeType = Object.create({
                 '.js': 'text/javascript',
                 '.css': 'text/css',
-                '.html': 'text/html'
+                '.html': 'text/html',
+                '.woff2': 'font/woff2'
             })
             existsSync(path.resolve(rootPath)) ? (function () {
                 readFile(path.resolve(rootPath), (err, data) => {
