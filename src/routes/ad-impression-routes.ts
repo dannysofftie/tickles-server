@@ -29,9 +29,10 @@ import { Router } from 'express'
 const router: Router = Router()
 
 // handles click events on ads
-router.get('/click', (req, res) => {
+router.get('/click/:visitorSessionId/:destinationUrl/:advertiserReference', (req, res) => {
 
-    // res.status(301).redirect('http://' + req.params['destination'])
+    //http://127.0.0.1:5000/api/v1/impression/click/TVRJM0xqQXVNQzR4Zkh3Nk9tWm1abVk2TVRJM0xqQXVNQzR4fHwxNTMzNTYzODY1NzEy/example.com/ZGFua2ltNzYxQGdtYWlsLmNvbTpEYW5ueSBTb2ZmdGll
+    res.status(301).redirect('http://' + req.params['destinationUrl'])
 
 })
 

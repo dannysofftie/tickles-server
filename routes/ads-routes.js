@@ -28,14 +28,15 @@ SOFTWARE.
 const express_1 = require("express");
 const sessions_1 = require("../api/v1/sessions");
 const admanager_1 = require("../api/v1/admanager");
+const verify_1 = require("../api/v1/verify");
 const router = express_1.Router({ caseSensitive: true, strict: true });
 // first request from publisher sites hits this end point
 // publisher details are collected, and a session built for this particular instance
 // subsequent requets from a common ip address reuse the already built session
-router.get('/publisher', sessions_1.requestSessionBuilder, admanager_1.estimatedDeviceSizeAdsBuilder);
+router.get('/publisher', admanager_1.locationGeocode, sessions_1.requestSessionBuilder, admanager_1.estimatedDeviceSizeAdsBuilder);
 // when this endpoint is hit, the previously built session is used to find relevant ad
 // as per the device size, and the container to which an ad has been initialized
 // by the publisher using new Tickles().init('element-id')
 // returns a single instance for a particular campaign, with ad data that will be used in display
-router.get('/addata', admanager_1.locationGeocode, admanager_1.adDataToDeliver);
+router.get('/addata', verify_1.verifyPublisher, admanager_1.deliverAdToPublisher);
 module.exports = router;

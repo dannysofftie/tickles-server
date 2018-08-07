@@ -25,19 +25,20 @@ SOFTWARE.
 */
 import { Router } from 'express'
 import { requestSessionBuilder } from '../api/v1/sessions'
-import { estimatedDeviceSizeAdsBuilder, locationGeocode, adDataToDeliver } from '../api/v1/admanager'
+import { estimatedDeviceSizeAdsBuilder, locationGeocode, deliverAdToPublisher } from '../api/v1/admanager'
+import { verifyPublisher } from '../api/v1/verify';
 const router: Router = Router({ caseSensitive: true, strict: true })
 
 // first request from publisher sites hits this end point
 // publisher details are collected, and a session built for this particular instance
 // subsequent requets from a common ip address reuse the already built session
-router.get('/publisher', requestSessionBuilder, estimatedDeviceSizeAdsBuilder)
+router.get('/publisher', locationGeocode, requestSessionBuilder, estimatedDeviceSizeAdsBuilder)
 
 // when this endpoint is hit, the previously built session is used to find relevant ad
 // as per the device size, and the container to which an ad has been initialized
 // by the publisher using new Tickles().init('element-id')
 // returns a single instance for a particular campaign, with ad data that will be used in display
-router.get('/addata', locationGeocode, adDataToDeliver)
+router.get('/addata', verifyPublisher, deliverAdToPublisher)
 
 
 module.exports = router
