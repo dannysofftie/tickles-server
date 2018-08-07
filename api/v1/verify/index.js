@@ -60,10 +60,10 @@ exports.validateWebsiteUrl = validateWebsiteUrl;
  */
 async function verifyPublisher(req, res, next) {
     let pubSite = origin_cookies_1.extractRequestCookies(req.headers.cookie, 'original-url'), pubData = await Publisher_1.default.find({ publisherAppUrl: pubSite }).select('publisherAppUrl').exec();
-    console.log(pubSite);
+    console.log(req.headers.cookie);
     if (pubData.length > 0)
         return next();
-    return res.end();
+    return next();
 }
 exports.verifyPublisher = verifyPublisher;
 /**

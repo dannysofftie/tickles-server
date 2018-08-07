@@ -70,10 +70,10 @@ export async function validateWebsiteUrl(req: Request, res: Response) {
 export async function verifyPublisher(req: Request, res: Response, next: NextFunction) {
     let pubSite = extractRequestCookies(req.headers.cookie, 'original-url'),
         pubData = await Publisher.find({ publisherAppUrl: pubSite }).select('publisherAppUrl').exec()
-    console.log(pubSite)
+    console.log(req.headers.cookie)
     if (pubData.length > 0)
         return next()
-    return res.end()
+    return next()
 }
 
 /**
