@@ -62,7 +62,6 @@ export async function validateWebsiteUrl(req: Request, res: Response) {
         return res.status(res.statusCode).json({ status: false })
     }
     return res.status(res.statusCode).json({ status: true })
-
 }
 
 /**
@@ -71,7 +70,7 @@ export async function validateWebsiteUrl(req: Request, res: Response) {
 export async function verifyPublisher(req: Request, res: Response, next: NextFunction) {
     let pubSite = extractRequestCookies(req.headers.cookie, 'original-url'),
         pubData = await Publisher.find({ publisherAppUrl: pubSite }).select('publisherAppUrl').exec()
-
+    console.log(pubSite)
     if (pubData.length > 0)
         return next()
     return res.end()
@@ -81,7 +80,7 @@ export async function verifyPublisher(req: Request, res: Response, next: NextFun
  * This utility will be called automatically after every 2 hours,
  * it runs all unverified ad documents in the database, through a verification
  * definition:
- * - checks destination urls, 
+ * - checks destination urls,
  * - compares ads tagged under the same advertiser for similarity,
  * - checks account for allowed minimum vs estimated amount per campaign set by advertiser
  * 
