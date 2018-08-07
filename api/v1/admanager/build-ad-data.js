@@ -88,6 +88,10 @@ class AdBuilder {
                     ads: { $push: '$adReference' }
                 }
             }]);
+        if (proposedAds.length < 1) {
+            // serve company ad data
+            return this.response.status(200).json({});
+        }
         // writeFileSync('./campaigns.json', JSON.stringify(proposedAds))
         // serve new ads to visitor
         if (previoulsyServedAds.length < 1) {
