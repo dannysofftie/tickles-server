@@ -4,26 +4,28 @@ body {
     width: 100%;
     margin: 0;
     padding: 0;
-    transition: 2s;
 }
-
-/* body {
-    border: 0.3px solid rgba(0, 0, 0, 0.3);
-} */
 
 * {
     font-family: Roboto;
-    font-size: small
+}
+
+.flash {
+    animation-duration: 1.5s;
+    animation-iteration-count: infinite;
 }
 
 .preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 100%;
-    background-color: #333;
     display: flex;
     justify-content: center;
     align-items: center;
-    display: none;
+    z-index: 9999;
+    background-color: white;
 }
 
 .spinner {
@@ -86,16 +88,37 @@ body {
     }
 }
 
+a {
+    color: rgb(3, 46, 44);
+}
+
+a:visited {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:active {
+    text-decoration: none;
+}
+
+a:link {
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
 .ad-container {
     height: 100%;
     width: 100%;
     padding: 0;
     margin: 0;
     overflow: hidden;
-    position: absolute;
+    position: fixed;
     left: 0;
     top: 0;
-    border: .2px solid rgba(36, 37, 37, 0.589)
+    /* border: .2px solid rgba(36, 37, 37, 0.589); */
 }
 
 .close,
@@ -120,4 +143,57 @@ body {
 .help {
     background-color: rgba(17, 19, 19, 0.589);
     right: 19px;
+}
+
+.ad-elements {
+    height: 100%;
+    width: 100%;
+}
+
+.ad-parent-section {
+    height: 100%;
+    width: 100%;
+    display: grid;
+}
+
+.ad-name,
+.description-text,
+.instructions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.feature-button {
+    padding: 9px 14px;
+    border: none;
+    background-color: rgb(16, 128, 100);
+    color: white;
+    border-radius: 2px;
+}
+
+.company-logo {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    z-index: 9;
+    color: rgb(16, 128, 100);
+    font-style: italic;
+}
+
+@media (min-width: 300px) {
+    .ad-parent-section {
+        grid-template-columns: 25% 15% 35% 25%;
+    }
+}
+
+@media (max-width: 300px) {
+    .ad-parent-section {
+        padding-top: 40px;
+        grid-template-rows: 16% 10% 50% 19%;
+    }
+    .company-logo {
+        font-size: 8px;
+    }
 }
