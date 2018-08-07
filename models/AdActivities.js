@@ -10,27 +10,13 @@ const AdActivities = new mongoose_1.Schema({
         type: mongoose_1.Schema.Types.ObjectId,
         required: true
     },
-    adViews: {
-        type: Number,
-        required: false,
-        default: 0
-    },
-    adClick: {
-        type: Number,
-        default: 0,
-        required: false
-    },
     clientIpAddress: {
         type: String,
         required: true
     },
-    adViewDuration: {
-        type: Date,
-        required: false
-    },
     clientSessionId: {
         type: String,
-        required: true,
+        required: true
     },
     clientLocation: {
         type: String,

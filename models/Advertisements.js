@@ -50,6 +50,14 @@ let Advertisements = new mongoose_1.Schema({
     adVerificationMessage: {
         type: String,
         required: false
+    }, preferredTheme: {
+        type: String,
+        required: false,
+        default: 'teal'
+    }, displayText: {
+        type: String,
+        required: false,
+        default: 'Explore '
     }
 }, { toObject: { virtuals: true } });
 exports.default = mongoose_1.model('Advertisements', Advertisements);

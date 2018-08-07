@@ -49,6 +49,14 @@ let Advertisements = new Schema({
     adVerificationMessage: {
         type: String,
         required: false
+    }, preferredTheme: {
+        type: String,
+        required: false,
+        default: 'teal'
+    }, displayText: {
+        type: String,
+        required: false,
+        default: 'Explore '
     }
 }, { toObject: { virtuals: true } })
 
