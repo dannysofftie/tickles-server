@@ -47,6 +47,10 @@ let Campaigns = new Schema({
     }, advertiserReference: {
         type: String,
         ref: 'Advertiser'
+    }, campaignStatus: {
+        type: Boolean,
+        requred: false,
+        default: true
     }
 }, { toObject: { virtuals: true } })
 

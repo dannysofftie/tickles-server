@@ -48,6 +48,10 @@ let Campaigns = new mongoose_1.Schema({
     }, advertiserReference: {
         type: String,
         ref: 'Advertiser'
+    }, campaignStatus: {
+        type: Boolean,
+        requred: false,
+        default: true
     }
 }, { toObject: { virtuals: true } });
 Campaigns.virtual('campaignBsCategories', {

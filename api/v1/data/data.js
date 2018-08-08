@@ -40,12 +40,15 @@ async function getBusinessCategories(req, res) {
 }
 exports.getBusinessCategories = getBusinessCategories;
 async function getAdvertiserCampaigns(req, res) {
-    // @ts-ignore 
-    // typings for collection.countDocuments() not implemented yet
     let campaigns = await Campaigns_1.default.find({ advertiserReference: req.headers['client-ssid'] });
     res.status(res.statusCode).json(campaigns);
 }
 exports.getAdvertiserCampaigns = getAdvertiserCampaigns;
+async function getCampaignsWithBsCategories(req, res) {
+    let campaigns = await Campaigns_1.default.find({ advertiserReference: req.headers['client-ssid'] }).populate('campaignCategory');
+    res.status(res.statusCode).json(campaigns);
+}
+exports.getCampaignsWithBsCategories = getCampaignsWithBsCategories;
 async function saveAdvertiserCampaign(req, res) {
     if (req.headers['client-ssid'] == undefined)
         return res.status(500).json({ error: 'NOT_LOGGEDIN' });
@@ -115,3 +118,8 @@ async function saveAdvertiserAd(req, res) {
     return res.status(res.statusCode).json({ message: 'SUCCESS' });
 }
 exports.saveAdvertiserAd = saveAdvertiserAd;
+async function updateCampaign(req, res) {
+    console.log(req.body);
+    await Campaigns_1.default.findOneAndUpdate({ _id: req.body['campaignId'], advertiserReference: req['client']['client-ssid'] }, { $set: {} });
+}
+exports.updateCampaign = updateCampaign;

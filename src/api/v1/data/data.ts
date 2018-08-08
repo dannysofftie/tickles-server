@@ -42,13 +42,16 @@ export async function getBusinessCategories(req: Request, res: Response) {
 }
 
 export async function getAdvertiserCampaigns(req: Request, res: Response) {
-    // @ts-ignore 
-    // typings for collection.countDocuments() not implemented yet
     let campaigns = await Campaigns.find({ advertiserReference: req.headers['client-ssid'] })
 
     res.status(res.statusCode).json(campaigns)
 }
 
+export async function getCampaignsWithBsCategories(req: Request, res: Response) {
+    let campaigns = await Campaigns.find({ advertiserReference: req.headers['client-ssid'] }).populate('campaignCategory')
+
+    res.status(res.statusCode).json(campaigns)
+}
 export async function saveAdvertiserCampaign(req: Request, res: Response) {
     if (req.headers['client-ssid'] == undefined)
         return res.status(500).json({ error: 'NOT_LOGGEDIN' })
@@ -127,4 +130,9 @@ export async function saveAdvertiserAd(req: Request, res: Response) {
     if (saveResult.toString().indexOf('ValidationError') != -1)
         return res.status(res.statusCode).json({ message: 'INVALID' })
     return res.status(res.statusCode).json({ message: 'SUCCESS' })
+}
+
+export async function updateCampaign(req: Request, res: Response) {
+    console.log(req.body)
+    await Campaigns.findOneAndUpdate({ _id: req.body['campaignId'], advertiserReference: req['client']['client-ssid'] }, { $set: {} })
 }
