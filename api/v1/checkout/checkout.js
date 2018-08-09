@@ -13,6 +13,8 @@ const stripe = require("stripe");
 const paypal = require("paypal-rest-sdk");
 const AdvertiserTransactions_1 = require("../../../models/AdvertiserTransactions");
 const mongoose_1 = require("mongoose");
+const Advertisers_1 = require("../../../models/Advertisers");
+const bcrypt = require("bcrypt");
 const production = process.env.NODE_ENV === 'production', returnUrl = production ? 'https://adxserver.herokuapp.com/api/v1/checkout/payment-wallet' : 'http://127.0.0.1:5000/api/v1/checkout/payment-wallet', cancelUrl = production ? 'https://adxe.herokuapp.com/client/dashboard/payment-wallet' : 'http://127.0.0.1:4000/client/dashboard/payment-wallet';
 /**
 * Handle payment checkouts, paypal, mpesa and credit cards
@@ -32,7 +34,9 @@ class Checkout {
      * @param req request object
      */
     async checkoutPayPal(req) {
-        console.log(req.body);
+        let advertiserDetails = await Advertisers_1.default.find({ ssid: req.headers['client-ssid'] }).select('password -_id').exec();
+        if (!bcrypt.compareSync(req.body['advertiser-password'], advertiserDetails[0]['password']))
+            return { message: 'password-error' };
         paypal.configure({
             mode: 'sandbox',
             client_id: process.env.PAYPAL_CLIENT_ID,
@@ -160,7 +164,9 @@ class Checkout {
 }
 async function checkoutPayPal(req, res) {
     let response = await new Checkout().checkoutPayPal(req);
-    res.status(res.statusCode).json(response);
+    if (response.message == 'password-error')
+        return res.status(res.statusCode).json({ message: 'password-error' });
+    return res.status(res.statusCode).json(response);
 }
 exports.checkoutPayPal = checkoutPayPal;
 async function receivePaypalPayment(req, res) {

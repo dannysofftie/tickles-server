@@ -5,6 +5,8 @@ import * as stripe from 'stripe'
 import * as paypal from 'paypal-rest-sdk'
 import AdvertiserTransactions from '../../../models/AdvertiserTransactions'
 import { Types } from 'mongoose'
+import Advertisers from '../../../models/Advertisers';
+import * as bcrypt from 'bcrypt'
 
 const production = process.env.NODE_ENV === 'production',
     returnUrl = production ? 'https://adxserver.herokuapp.com/api/v1/checkout/payment-wallet' : 'http://127.0.0.1:5000/api/v1/checkout/payment-wallet',
@@ -28,7 +30,10 @@ class Checkout {
      * @param req request object
      */
     public async checkoutPayPal(req: Request) {
-        console.log(req.body)
+        let advertiserDetails = await Advertisers.find({ ssid: req.headers['client-ssid'] }).select('password -_id').exec()
+        if (!bcrypt.compareSync(req.body['advertiser-password'], advertiserDetails[0]['password']))
+            return { message: 'password-error' }
+
         paypal.configure({
             mode: 'sandbox',
             client_id: process.env.PAYPAL_CLIENT_ID,
@@ -163,7 +168,9 @@ class Checkout {
 
 export async function checkoutPayPal(req: Request, res: Response) {
     let response = await new Checkout().checkoutPayPal(req)
-    res.status(res.statusCode).json(response)
+    if (response.message == 'password-error')
+        return res.status(res.statusCode).json({ message: 'password-error' })
+    return res.status(res.statusCode).json(response)
 }
 
 export async function receivePaypalPayment(req: Request, res: Response) {
