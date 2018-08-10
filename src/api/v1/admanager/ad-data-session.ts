@@ -75,7 +75,7 @@ class AdDataSession {
      * @returns {boolean} - build status
      */
     private async generateDesktopAd(data: Array<string> | {}) {
-
+        console.log(this.request['client-location'])
         // build desktop ad and respond with build status
         // use 'data' passed to complete session, which will be used during subsequent requests for ad data, to be served to the client
 
@@ -99,7 +99,7 @@ class AdDataSession {
                 ])
                 // update suggestedAds array to give priority to new ads under 
                 // the same businessCatgeroy as the publisher making request
-                PublisherAdSession.findOneAndUpdate({ visitorSessionId: { $eq: sessionId } }, { $set: { suggestedAds: data } }).exec()
+                await PublisherAdSession.findOneAndUpdate({ visitorSessionId: { $eq: sessionId } }, { $set: { suggestedAds: data } }).exec()
                 this.response.cookie('tickles-session', existingSession[0]['visitorSessionId'], { httpOnly: true, maxAge: 2 * 24 * 60 * 60 * 1000 })
                 return this.response.status(200).json({ status: true, ref: existingSession[0]['visitorSessionId'] })
             }
@@ -159,7 +159,7 @@ class AdDataSession {
         // get all campaigns scheduled in the range of current date of request, 
         // filter out campaigns where domain of the incoming request is banned by the advertiser
         if (publisher.length < 1 || publisher[0]['id'] == null)
-            campaigns = await Advertisers.find().select('_id ssid joinedAs').populate({
+            campaigns = await Advertisers.find({ accountBalance: { $gte: 5 } }).select('_id ssid joinedAs').populate({
                 path: 'advertiserCampaigns',
                 model: 'Campaigns',
                 match: {
@@ -180,7 +180,7 @@ class AdDataSession {
                 }
             }).exec()
         else
-            campaigns = await Advertisers.find({ businessGroupTarget: publisher[0]['businessCategory'] }).select('_id ssid joinedAs').populate({
+            campaigns = await Advertisers.find({ businessGroupTarget: publisher[0]['businessCategory'], accountBalance: { $gte: 5 } }).select('_id ssid joinedAs').populate({
                 path: 'advertiserCampaigns',
                 model: 'Campaigns',
                 match: {
@@ -246,7 +246,7 @@ class AdDataSession {
             }
         }
 
-        // define filtering criteria, based on campaign scheduled dates, adVerificationStatus, campaign bid amount,
+        // define filtering criteria, campaign bid amount,
         // publisher preffered bid amount and related filters, always return one instance of a particular campaign
         // check targeted location for a particular campaign, and serve when incoming request location matches
         // with priority, else fallback to a heuristic selection, based on bid amount, whether the ad has been served 

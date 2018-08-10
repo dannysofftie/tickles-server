@@ -32,6 +32,7 @@ import ClientAdInteractions from '../../../models/ClientAdInteractions';
 import { Types } from 'mongoose';
 import * as path from 'path';
 import { Document } from 'mongoose'
+import Billings from '../../../models/Billings';
 
 /**
  * Uses previously built session visitor's cookies, device size, and incoming request's element size
@@ -227,19 +228,34 @@ class RecordAdViews {
     private response: Response
     private impression: string
     private visitorSessionId: string
+    private advertiserReference: string
+    private adReference: string
 
     constructor(req: Request, res: Response) {
         this.request = req
         this.response = res
         this.impression = this.request['query']['impression']
         this.visitorSessionId = this.request['query']['visitorSessionId']
+        this.advertiserReference = this.request['query']['advertiserReference']
+        this.adReference = this.request['query']['adReference']
         this.updateViewCount()
     }
 
     private async updateViewCount() {
+        // record view
         await ClientAdInteractions.findOneAndUpdate({
             visitorInstanceId: this.visitorSessionId
         }, { $inc: { 'interactionType.view': 1 } }, { new: true }).exec()
+        // record bill
+        await new Billings({
+            _id: new Types.ObjectId(),
+            advertiserReference: this.advertiserReference,
+            adReference: this.adReference,
+            impression: 'view',
+            visitorSessionId: this.visitorSessionId,
+            referencedPublisher: extractRequestCookies(this.request['headers']['cookie'], 'original-url')
+        }).save()
+
         return
     }
 }

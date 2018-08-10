@@ -38,6 +38,7 @@ const origin_cookies_1 = require("../utils/origin-cookies");
 const ClientAdInteractions_1 = require("../../../models/ClientAdInteractions");
 const mongoose_1 = require("mongoose");
 const path = require("path");
+const Billings_1 = require("../../../models/Billings");
 /**
  * Uses previously built session visitor's cookies, device size, and incoming request's element size
  * for ad placement. The element size in this case, `width & height` is used to determine the ad to deliver,
@@ -208,12 +209,24 @@ class RecordAdViews {
         this.response = res;
         this.impression = this.request['query']['impression'];
         this.visitorSessionId = this.request['query']['visitorSessionId'];
+        this.advertiserReference = this.request['query']['advertiserReference'];
+        this.adReference = this.request['query']['adReference'];
         this.updateViewCount();
     }
     async updateViewCount() {
+        // record view
         await ClientAdInteractions_1.default.findOneAndUpdate({
             visitorInstanceId: this.visitorSessionId
         }, { $inc: { 'interactionType.view': 1 } }, { new: true }).exec();
+        // record bill
+        await new Billings_1.default({
+            _id: new mongoose_1.Types.ObjectId(),
+            advertiserReference: this.advertiserReference,
+            adReference: this.adReference,
+            impression: 'view',
+            visitorSessionId: this.visitorSessionId,
+            referencedPublisher: origin_cookies_1.extractRequestCookies(this.request['headers']['cookie'], 'original-url')
+        }).save();
         return;
     }
 }
