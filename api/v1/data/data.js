@@ -6,6 +6,7 @@ const Campaigns_1 = require("../../../models/Campaigns");
 const Advertisers_1 = require("../../../models/Advertisers");
 const Advertisements_1 = require("../../../models/Advertisements");
 const AdvertiserTransactions_1 = require("../../../models/AdvertiserTransactions");
+const Referrals_1 = require("../../../models/Referrals");
 async function getBusinessCategories(req, res) {
     await BusinessCategories_1.default.insertMany([{
             _id: new mongoose_1.Types.ObjectId(),
@@ -119,7 +120,69 @@ async function saveAdvertiserAd(req, res) {
 }
 exports.saveAdvertiserAd = saveAdvertiserAd;
 async function updateCampaign(req, res) {
+    // find a way to update campaigns on checkbox toggle
     console.log(req.body);
     await Campaigns_1.default.findOneAndUpdate({ _id: req.body['campaignId'], advertiserReference: req['client']['client-ssid'] }, { $set: {} });
 }
 exports.updateCampaign = updateCampaign;
+async function retrieveTransactionHistory(req, res) {
+    let transactionHistory = await AdvertiserTransactions_1.default.aggregate([
+        {
+            $match: { advertiserReference: req['client']['client-ssid'] }
+        }, {
+            $project: { paymentSource: 1, topUpDate: 1, paidAmount: 1, paymentState: 1, payerEmail: 1 }
+        }, {
+            $sort: { topUpDate: -1 }
+        }
+    ]).limit(8), referralAwards = await Referrals_1.default.aggregate([
+        {
+            $match: {
+                advertiserReference: req['client']['client-ssid']
+            }
+        }, {
+            $unwind: '$referrees'
+        }, {
+            $group: {
+                _id: '$advertiserReference',
+                revenue: { $sum: '$referrees.revenue' }
+            }
+        }
+    ]);
+    return res.status(res.statusCode).json({ transactionHistory: transactionHistory, referralAwards: referralAwards });
+}
+exports.retrieveTransactionHistory = retrieveTransactionHistory;
+async function retrieveCampaignStatistics(req, res) {
+    let data = await Campaigns_1.default.aggregate([
+        {
+            $match: { advertiserReference: req['client']['client-ssid'] }
+        }, {
+            $lookup: {
+                from: 'advertisements',
+                localField: '_id',
+                foreignField: 'adCampaignCategory',
+                as: 'ads'
+            }
+        }, {
+            $unwind: '$ads'
+        }, {
+            $lookup: {
+                from: 'clientadinteractions',
+                localField: 'ads._id',
+                foreignField: 'adReference',
+                as: 'interactions'
+            }
+        }, {
+            $unwind: '$interactions'
+        }, {
+            $group: {
+                _id: { adId: '$ads._id', campaignName: '$campaignName', adName: '$ads.adName' },
+                impressions: { $sum: 1 },
+                views: { $sum: '$interactions.interactionType.view' },
+                clicks: { $sum: '$interactions.interactionType.click' },
+                doubleclicks: { $sum: '$interactions.interactionType.doubleClick' }
+            }
+        }
+    ]);
+    return res.status(res.statusCode).json(data);
+}
+exports.retrieveCampaignStatistics = retrieveCampaignStatistics;

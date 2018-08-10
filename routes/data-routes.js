@@ -26,4 +26,6 @@ router.get('/get-advertiser-ads', verify_1.validateRequests, data_1.getAdvertise
 router.post('/validate-url', verify_1.validateRequests, verify_1.validateWebsiteUrl);
 router.get('/getCampaignsWithBsCategories', verify_1.validateRequests, data_1.getCampaignsWithBsCategories);
 router.post('/updateCampaign', verify_1.validateRequests, data_1.updateCampaign);
+router.get('/transactionHistory', verify_1.validateRequests, data_1.retrieveTransactionHistory);
+router.get('/campaignStatistics', verify_1.validateRequests, data_1.retrieveCampaignStatistics);
 module.exports = router;

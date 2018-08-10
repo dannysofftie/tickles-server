@@ -26,6 +26,16 @@ let Advertiser = new mongoose_1.Schema({
     }, businessGroupTarget: {
         type: mongoose_1.Schema.Types.ObjectId,
         ref: 'BusinessCategories'
+    },
+    referred: {
+        value: {
+            type: Boolean,
+            default: false
+        },
+        referrerId: {
+            type: String,
+            required: false
+        }
     }, accountBalance: {
         type: Number,
         required: false,

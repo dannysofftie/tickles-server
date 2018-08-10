@@ -25,6 +25,16 @@ let Advertiser = new Schema({
     }, businessGroupTarget: {
         type: Schema.Types.ObjectId,
         ref: 'BusinessCategories'
+    },
+    referred: {
+        value: {
+            type: Boolean,
+            default: false
+        },
+        referrerId: {
+            type: String,
+            required: false
+        }
     }, accountBalance: {
         type: Number,
         required: false,

@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { getBusinessCategories, getAdvertiserCampaigns, saveAdvertiserAd, saveAdvertiserCampaign, getAdvertiserDetails, getAdvertiserAdvertisements, getCampaignsWithBsCategories, updateCampaign } from '../api/v1/data/data'
+import { getBusinessCategories, getAdvertiserCampaigns, saveAdvertiserAd, saveAdvertiserCampaign, getAdvertiserDetails, getAdvertiserAdvertisements, getCampaignsWithBsCategories, updateCampaign, retrieveTransactionHistory, retrieveCampaignStatistics } from '../api/v1/data/data'
 import * as multer from 'multer'
 import { validateWebsiteUrl, validateRequests } from '../api/v1/verify'
 import * as path from 'path'
@@ -36,5 +36,9 @@ router.post('/validate-url', validateRequests, validateWebsiteUrl)
 router.get('/getCampaignsWithBsCategories', validateRequests, getCampaignsWithBsCategories)
 
 router.post('/updateCampaign', validateRequests, updateCampaign)
+
+router.get('/transactionHistory', validateRequests, retrieveTransactionHistory)
+
+router.get('/campaignStatistics', validateRequests, retrieveCampaignStatistics)
 
 module.exports = router

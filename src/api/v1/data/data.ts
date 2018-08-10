@@ -5,6 +5,7 @@ import Campaigns from '../../../models/Campaigns'
 import Advertisers from '../../../models/Advertisers'
 import Advertisements from '../../../models/Advertisements'
 import AdvertiserTransactions from '../../../models/AdvertiserTransactions';
+import Referrals from '../../../models/Referrals';
 
 export async function getBusinessCategories(req: Request, res: Response) {
     await BusinessCategories.insertMany([{
@@ -133,6 +134,71 @@ export async function saveAdvertiserAd(req: Request, res: Response) {
 }
 
 export async function updateCampaign(req: Request, res: Response) {
+    // find a way to update campaigns on checkbox toggle
     console.log(req.body)
     await Campaigns.findOneAndUpdate({ _id: req.body['campaignId'], advertiserReference: req['client']['client-ssid'] }, { $set: {} })
+}
+
+export async function retrieveTransactionHistory(req: Request, res: Response) {
+    let transactionHistory = await AdvertiserTransactions.aggregate([
+        {
+            $match: { advertiserReference: req['client']['client-ssid'] }
+        }, {
+            $project: { paymentSource: 1, topUpDate: 1, paidAmount: 1, paymentState: 1, payerEmail: 1 }
+        }, {
+            $sort: { topUpDate: -1 }
+        }
+    ]).limit(8),
+        referralAwards = await Referrals.aggregate([
+            {
+                $match: {
+                    advertiserReference: req['client']['client-ssid']
+                }
+            }, {
+                $unwind: '$referrees'
+            }, {
+                $group: {
+                    _id: '$advertiserReference',
+                    revenue: { $sum: '$referrees.revenue' }
+                }
+            }
+        ])
+
+    return res.status(res.statusCode).json({ transactionHistory: transactionHistory, referralAwards: referralAwards })
+}
+
+export async function retrieveCampaignStatistics(req: Request, res: Response) {
+    let data = await Campaigns.aggregate([
+        {
+            $match: { advertiserReference: req['client']['client-ssid'] }
+        }, {
+            $lookup: {
+                from: 'advertisements',
+                localField: '_id',
+                foreignField: 'adCampaignCategory',
+                as: 'ads'
+            }
+        }, {
+            $unwind: '$ads'
+        }, {
+            $lookup: {
+                from: 'clientadinteractions',
+                localField: 'ads._id',
+                foreignField: 'adReference',
+                as: 'interactions'
+            }
+        }, {
+            $unwind: '$interactions'
+        }, {
+            $group: {
+                _id: { adId: '$ads._id', campaignName: '$campaignName', adName: '$ads.adName' },
+                impressions: { $sum: 1 },
+                views: { $sum: '$interactions.interactionType.view' },
+                clicks: { $sum: '$interactions.interactionType.click' },
+                doubleclicks: { $sum: '$interactions.interactionType.doubleClick' }
+            }
+        }
+    ])
+
+    return res.status(res.statusCode).json(data)
 }
