@@ -20,6 +20,10 @@ const Publishers = new Schema({
         type: String,
         required: false
     },
+    walletAddress: {
+        type: String,
+        required: false
+    },
     isAppUrlVerified: {
         type: Boolean,
         required: false,

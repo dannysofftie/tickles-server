@@ -21,6 +21,10 @@ const Publishers = new mongoose_1.Schema({
         type: String,
         required: false
     },
+    walletAddress: {
+        type: String,
+        required: false
+    },
     isAppUrlVerified: {
         type: Boolean,
         required: false,
