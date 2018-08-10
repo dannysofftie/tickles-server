@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-const host = window.location.origin.includes('127.0.0.3') ?
+const host = window.location.origin.includes('127.0.0.1') ?
     'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com',
     height: number = document.body.clientHeight,
     width: number = document.body.clientWidth
@@ -73,7 +73,7 @@ function r() {
     return k > 20 && k < 30 ? k : r()
 }
 
-function notify(elem: HTMLElement, sessionId?: string) {
+function notify(elem: HTMLElement, sessionId?: string, advertiserReference?: string, adReference?: string) {
     let cn: number = 0
     setInterval(() => { z() }, 2000)
     function z() {
@@ -82,23 +82,23 @@ function notify(elem: HTMLElement, sessionId?: string) {
         }
         if (cn >= r()) {
             cn = 0
-            l(true, sessionId)
+            l(true, sessionId, advertiserReference, adReference)
         }
     }
 }
 
-async function l(view?: boolean, visSession?: string) {
+async function l(view?: boolean, visSession?: string, advertiserReference?: string, adReference?: string) {
     let adDataUrl: string = host + '/api/v1/cnb/addata?height=' + height + '&width=' + width
     if (typeof view != 'undefined') {
-        adDataUrl += '&impression=view&visitorSessionId=' + visSession
+        adDataUrl += '&impression=view&visitorSessionId=' + visSession + '&advertiserReference=' + advertiserReference + '&adReference=' + adReference
     }
     (<HTMLElement>document.querySelector('div.preloader')).style.display = 'flex'
     let adData = await q(adDataUrl),
         parent = document.querySelector('div.ad-elements'),
         mdiClass: Array<string> = ['mdi-loading', 'mdi-chevron-double-right', 'mdi-history']
-
-    let container: string = `<a href="${host + '/tickles/ads/impression/click/' + adData['visitorInstanceId'] + '/'
-        + adData['adDestinationUrl'] + '/' + adData['advertiserReference']}" data-click="click" target="_blank" class="ad-parent-section animated fadeInDown">`
+    // :visitorSessionId/:adReference/:destinationUrl/:advertiserReference
+    let container: string = `<a href="${host + '/tickles/ads/impression/click/' + adData['visitorInstanceId'] + '/' + adData['_id']
+        + '/' + adData['adDestinationUrl'] + '/' + adData['advertiserReference']}" data-click="click" target="_blank" class="ad-parent-section animated fadeInDown">`
 
     if (adData['adSelectedType'] == 'image') {
         // build ad data with image
@@ -132,7 +132,7 @@ async function l(view?: boolean, visSession?: string) {
     setTimeout(() => {
         (<HTMLElement>document.querySelector('div.preloader')).style.display = 'none'
         if (adData['adName'] != undefined)
-            notify(target, adData['visitorInstanceId'])
+            notify(target, adData['visitorInstanceId'], adData['advertiserReference'], adData['_id'])
     }, 400)
 }
 

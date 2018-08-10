@@ -34,7 +34,7 @@ SOFTWARE.
 
     function Tickles() {
         this.k = '/api/v1/cnb/publisher'
-        this.b = window.location.hostname.includes('127.0.0.2') ? 'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com'
+        this.b = window.location.hostname.includes('127.0.0.1') ? 'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com'
         this.u = this.b + this.k
         return this
     }
