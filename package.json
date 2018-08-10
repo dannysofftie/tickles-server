@@ -33,6 +33,7 @@
     "nodemailer": "^4.6.7",
     "paypal-rest-sdk": "^1.8.1",
     "stripe": "^6.2.1",
+    "superagent": "^3.8.3",
     "ws": "^5.2.2"
   },
   "maintainers": [
@@ -51,6 +52,7 @@
     "@types/nodemailer": "^4.6.2",
     "@types/paypal-rest-sdk": "^1.7.2",
     "@types/stripe": "^5.0.18",
+    "@types/superagent": "^3.8.3",
     "@types/ws": "^4.0.2",
     "dotenv": "^6.0.0"
   },

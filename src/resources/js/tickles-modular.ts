@@ -23,7 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-const host = window.location.origin.includes('127.0.0.2') ?
+const host = window.location.origin.includes('127.0.0.1') ?
     'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com',
     height: number = document.body.clientHeight,
     width: number = document.body.clientWidth
