@@ -59,10 +59,11 @@ exports.validateWebsiteUrl = validateWebsiteUrl;
  * Verify publisher before delivering an ad
  */
 async function verifyPublisher(req, res, next) {
-    let pubSite = origin_cookies_1.extractRequestCookies(req.headers.cookie, 'original-url'), pubData = await Publisher_1.default.find({ publisherAppUrl: pubSite }).select('publisherAppUrl').exec();
-    console.log(req.headers.cookie);
-    if (pubData.length > 0)
-        return next();
+    let pubSite = origin_cookies_1.extractRequestCookies(req.headers.cookie, 'original-url'), pubData = await Publisher_1.default.find({ publisherAppUrl: pubSite }).select('publisherAppUrl isAppUrlVerified').exec();
+    if (pubData.length < 1)
+        return res.end();
+    if (pubData[0]['isAppUrlVerified'] == false)
+        await Publisher_1.default.findOneAndUpdate({ publisherAppUrl: pubSite }, { $set: { isAppUrlVerified: true } });
     return next();
 }
 exports.verifyPublisher = verifyPublisher;
