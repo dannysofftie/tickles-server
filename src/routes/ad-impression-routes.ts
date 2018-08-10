@@ -25,15 +25,33 @@ SOFTWARE.
 */
 
 import { Router } from 'express'
+import Billings from '../models/Billings';
+import { Types } from 'mongoose';
+import ClientAdInteractions from '../models/ClientAdInteractions';
 
 const router: Router = Router()
 
 // handles click events on ads
-router.get('/click/:visitorSessionId/:destinationUrl/:advertiserReference', (req, res) => {
+router.get('/click/:visitorSessionId/:adReference/:destinationUrl/:advertiserReference', async (req, res) => {
+    await ClientAdInteractions.findOneAndUpdate(
+        {
+            visitorInstanceId: req.params['visitorSessionId']
+        }, {
+            $inc: { 'interactionType.click': 1 }
+        }, {
+            new: true
+        })
 
-    //http://127.0.0.1:5000/api/v1/impression/click/TVRJM0xqQXVNQzR4Zkh3Nk9tWm1abVk2TVRJM0xqQXVNQzR4fHwxNTMzNTYzODY1NzEy/example.com/ZGFua2ltNzYxQGdtYWlsLmNvbTpEYW5ueSBTb2ZmdGll
+    await new Billings({
+        _id: new Types.ObjectId(),
+        advertiserReference: req.params['advertiserReference'],
+        adReference: req.params['adReference'],
+        impression: 'click',
+        visitorSessionId: req.params['visitorSessionId'],
+        referencedPublisher: req.params['destinationUrl']
+    }).save()
+
     res.status(301).redirect('http://' + req.params['destinationUrl'])
-
 })
 
 // handles views, when an ad appears on the viewport

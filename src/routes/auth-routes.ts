@@ -1,13 +1,14 @@
 import { Router } from 'express'
-import * as auth from '../api/v1/auth'
+import { advertiserSignUp, advertiserLogin, verifyPaypal } from '../api/v1/auth'
 
 const router: Router = Router({ caseSensitive: true, strict: true })
 
 
-router.post('/client/signup', auth.advertiserSignUp)
+router.post('/client/signup', advertiserSignUp)
 
-router.post('/client/login', auth.advertiserLogin)
+router.post('/client/login', advertiserLogin)
 
+router.post('/verifyPaypal', verifyPaypal)
 
 
 // FALLBACK FOR UNHANDLED ENDPOINTS

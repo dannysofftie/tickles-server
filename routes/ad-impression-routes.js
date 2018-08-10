@@ -25,10 +25,27 @@ SOFTWARE.
  
 */
 const express_1 = require("express");
+const Billings_1 = require("../models/Billings");
+const mongoose_1 = require("mongoose");
+const ClientAdInteractions_1 = require("../models/ClientAdInteractions");
 const router = express_1.Router();
 // handles click events on ads
-router.get('/click/:visitorSessionId/:destinationUrl/:advertiserReference', (req, res) => {
-    //http://127.0.0.1:5000/api/v1/impression/click/TVRJM0xqQXVNQzR4Zkh3Nk9tWm1abVk2TVRJM0xqQXVNQzR4fHwxNTMzNTYzODY1NzEy/example.com/ZGFua2ltNzYxQGdtYWlsLmNvbTpEYW5ueSBTb2ZmdGll
+router.get('/click/:visitorSessionId/:adReference/:destinationUrl/:advertiserReference', async (req, res) => {
+    await ClientAdInteractions_1.default.findOneAndUpdate({
+        visitorInstanceId: req.params['visitorSessionId']
+    }, {
+        $inc: { 'interactionType.click': 1 }
+    }, {
+        new: true
+    });
+    await new Billings_1.default({
+        _id: new mongoose_1.Types.ObjectId(),
+        advertiserReference: req.params['advertiserReference'],
+        adReference: req.params['adReference'],
+        impression: 'click',
+        visitorSessionId: req.params['visitorSessionId'],
+        referencedPublisher: req.params['destinationUrl']
+    }).save();
     res.status(301).redirect('http://' + req.params['destinationUrl']);
 });
 // handles views, when an ad appears on the viewport
