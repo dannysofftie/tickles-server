@@ -114,10 +114,10 @@ class Checkout {
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }))
 
-        await Advertisers.findOneAndUpdate({ ssid: paymentData['advertiserReference'] }, {
+        let update = await Advertisers.findOneAndUpdate({ ssid: paymentData['advertiserReference'] }, {
             $inc: { accountBalance: Number(paymentData['paidAmount']) }
         }).exec()
-
+        console.log(update)
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' })
 

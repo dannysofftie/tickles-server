@@ -121,9 +121,10 @@ class Checkout {
             advertiserReference: paymentData['advertiserReference'],
             paymentSource: 'paypal'
         }), paymentStatus = await paymentInfo.save().catch(err => ({ Error: err }));
-        await Advertisers_1.default.findOneAndUpdate({ ssid: paymentData['advertiserReference'] }, {
+        let update = await Advertisers_1.default.findOneAndUpdate({ ssid: paymentData['advertiserReference'] }, {
             $inc: { accountBalance: Number(paymentData['paidAmount']) }
         }).exec();
+        console.log(update);
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' });
         // update advertiser account balance after paypal complete
