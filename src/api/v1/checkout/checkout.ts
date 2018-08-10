@@ -117,7 +117,7 @@ class Checkout {
         let update = await Advertisers.findOneAndUpdate({ ssid: paymentData['advertiserReference'] }, {
             $inc: { accountBalance: Number(paymentData['paidAmount']) }
         }).exec()
-        console.log(update)
+
         if (paymentStatus.toString().includes('Error'))
             return ({ Error: 'internal_server_error' })
 

@@ -24,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 */
-const host = window.location.origin.includes('127.0.0.1') ?
+const host = window.location.origin.includes('127.0.0.2') ?
     'http://127.0.0.1:5000' : 'https://adxserver.herokuapp.com', height = document.body.clientHeight, width = document.body.clientWidth;
 function q(url) {
     return new Promise(function (resolve, reject) {

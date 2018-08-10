@@ -75,7 +75,7 @@ class AdDataSession {
      * @returns {boolean} - build status
      */
     private async generateDesktopAd(data: Array<string> | {}) {
-        console.log(this.request['client-location'])
+
         // build desktop ad and respond with build status
         // use 'data' passed to complete session, which will be used during subsequent requests for ad data, to be served to the client
 
@@ -261,5 +261,6 @@ class AdDataSession {
  * @param {Response} res response object
  */
 export async function estimatedDeviceSizeAdsBuilder(req: Request, res: Response) {
+    console.log(req['client-location'])
     await new AdDataSession(req, res)
 }
