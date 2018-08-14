@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = require("mongoose");
 const Advertisers_1 = require("./Advertisers");
+const Publisher_1 = require("./Publisher");
 const Billings = new mongoose_1.Schema({
     _id: {
         type: mongoose_1.Schema.Types.ObjectId,
@@ -43,6 +44,7 @@ Billings.pre('save', async function (next) {
     else
         this['billAmount'] = 2;
     await updateAdvertiser(this['advertiserReference'], this['billAmount']);
+    await awardPublisherRevenue(this['referencedPublisher'], Number(this['billAmount']));
     this['billStatus'] = true;
     next();
 });
@@ -51,5 +53,10 @@ async function updateAdvertiser(advertiserReference, amount) {
         $inc: { accountBalance: -Number(amount) }
     }).exec();
     return updateBalance['accountBalance'];
+}
+const publisherShare = 20 / 100;
+async function awardPublisherRevenue(publisherUrl, revenue) {
+    let revenueBalance = await Publisher_1.default.findOneAndUpdate({ publisherAppUrl: publisherUrl }, { $inc: { revenueBalance: (revenue * publisherShare) } });
+    return revenueBalance;
 }
 exports.default = mongoose_1.model('Billings', Billings);

@@ -1,6 +1,7 @@
 import { Schema, model } from 'mongoose'
 import Advertisers from './Advertisers';
 import AdvertiserTransactions from './AdvertiserTransactions';
+import Publisher from './Publisher';
 
 const Billings = new Schema({
     _id: {
@@ -45,6 +46,7 @@ Billings.pre('save', async function (next) {
         this['billAmount'] = 2
 
     await updateAdvertiser(this['advertiserReference'], this['billAmount'])
+    await awardPublisherRevenue(this['referencedPublisher'], Number(this['billAmount']))
     this['billStatus'] = true
     next()
 })
@@ -57,6 +59,15 @@ async function updateAdvertiser(advertiserReference: string, amount: string) {
 
     return updateBalance['accountBalance']
 
+}
+
+const publisherShare: number = 20 / 100
+
+async function awardPublisherRevenue(publisherUrl: string, revenue: number) {
+   
+    let revenueBalance = await Publisher.findOneAndUpdate({ publisherAppUrl: publisherUrl },
+        { $inc: { revenueBalance: (revenue * publisherShare) } })
+    return revenueBalance
 }
 
 export default model('Billings', Billings)

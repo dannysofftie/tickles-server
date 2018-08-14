@@ -114,6 +114,12 @@ class AdDataSession {
             clientBrowser: this.request['client-session']['client-browser'],
             clientBrowserVersion: this.request['client-session']['client-browser-version'],
             clientOperatingSystem: this.request['client-session']['client-operating-system'],
+            visitorLocation: {
+                country_short: this.request['client-location']['country_short'],
+                country_long: this.request['client-location']['country_long'],
+                region: this.request['client-location']['region'],
+                city: this.request['client-location']['city']
+            },
             suggestedAds: data
         }), sessionStatus = await pubSession.save().then(doc => doc['visitorSessionId']).catch(err => []);
         this.response.cookie('tickles-session', sessionStatus, { httpOnly: true });

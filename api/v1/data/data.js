@@ -7,6 +7,7 @@ const Advertisers_1 = require("../../../models/Advertisers");
 const Advertisements_1 = require("../../../models/Advertisements");
 const AdvertiserTransactions_1 = require("../../../models/AdvertiserTransactions");
 const Referrals_1 = require("../../../models/Referrals");
+const PublisherAdSession_1 = require("../../../models/PublisherAdSession");
 async function getBusinessCategories(req, res) {
     await BusinessCategories_1.default.insertMany([{
             _id: new mongoose_1.Types.ObjectId(),
@@ -173,3 +174,32 @@ async function retrieveCampaignStatistics(req, res) {
     return res.status(res.statusCode).json(data);
 }
 exports.retrieveCampaignStatistics = retrieveCampaignStatistics;
+async function retrievePublisherData(req, res) {
+    let pudData = await PublisherAdSession_1.default.aggregate([
+        {
+            $unwind: '$clientCookies'
+        }, {
+            $lookup: {
+                from: 'publishers',
+                localField: 'clientCookies.original-url',
+                foreignField: 'publisherAppUrl',
+                as: 'publisher'
+            }
+        }, {
+            $project: { 'publisher.publisherSsid': 1, visitorLocation: 1 }
+        }, {
+            $unwind: '$publisher'
+        }, {
+            $match: { 'publisher.publisherSsid': req.headers['client-ssid'] }
+        }, {
+            $project: { visitorLocation: 1, _id: 0 }
+        }
+    ]);
+    return res.status(res.statusCode).json(pudData);
+}
+exports.retrievePublisherData = retrievePublisherData;
+async function deleteAdFromRecords(req, res) {
+    await Advertisements_1.default.findOneAndRemove({ _id: req.query['id'] }).exec();
+    res.status(res.statusCode).json({ status: 'success' });
+}
+exports.deleteAdFromRecords = deleteAdFromRecords;

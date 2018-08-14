@@ -28,6 +28,7 @@ import { Router } from 'express'
 import Billings from '../models/Billings';
 import { Types } from 'mongoose';
 import ClientAdInteractions from '../models/ClientAdInteractions';
+import { extractRequestCookies } from '../api/v1/utils/origin-cookies';
 
 const router: Router = Router()
 
@@ -48,7 +49,7 @@ router.get('/click/:visitorSessionId/:adReference/:destinationUrl/:advertiserRef
         adReference: req.params['adReference'],
         impression: 'click',
         visitorSessionId: req.params['visitorSessionId'],
-        referencedPublisher: req.params['destinationUrl']
+        referencedPublisher: extractRequestCookies(req['headers']['cookie'], 'original-url')
     }).save()
 
     res.status(301).redirect('http://' + req.params['destinationUrl'])

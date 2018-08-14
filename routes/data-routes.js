@@ -28,4 +28,6 @@ router.get('/getCampaignsWithBsCategories', verify_1.validateRequests, data_1.ge
 router.post('/updateCampaign', verify_1.validateRequests, data_1.updateCampaign);
 router.get('/transactionHistory', verify_1.validateRequests, data_1.retrieveTransactionHistory);
 router.get('/campaignStatistics', verify_1.validateRequests, data_1.retrieveCampaignStatistics);
+router.get('/publisherData', data_1.retrievePublisherData);
+router.get('/deleteAdFromRecords', data_1.deleteAdFromRecords);
 module.exports = router;

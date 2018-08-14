@@ -28,6 +28,7 @@ const express_1 = require("express");
 const Billings_1 = require("../models/Billings");
 const mongoose_1 = require("mongoose");
 const ClientAdInteractions_1 = require("../models/ClientAdInteractions");
+const origin_cookies_1 = require("../api/v1/utils/origin-cookies");
 const router = express_1.Router();
 // handles click events on ads
 router.get('/click/:visitorSessionId/:adReference/:destinationUrl/:advertiserReference', async (req, res) => {
@@ -44,7 +45,7 @@ router.get('/click/:visitorSessionId/:adReference/:destinationUrl/:advertiserRef
         adReference: req.params['adReference'],
         impression: 'click',
         visitorSessionId: req.params['visitorSessionId'],
-        referencedPublisher: req.params['destinationUrl']
+        referencedPublisher: origin_cookies_1.extractRequestCookies(req['headers']['cookie'], 'original-url')
     }).save();
     res.status(301).redirect('http://' + req.params['destinationUrl']);
 });

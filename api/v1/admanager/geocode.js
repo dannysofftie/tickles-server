@@ -13,8 +13,13 @@ async function locationGeocode(req, res, next) {
         return new Promise((resolve, reject) => {
             superagent.get('http://ip.cn').set('User-Agent', 'curl/7.37.1')
                 .end(function (err, res) {
-                var ip = res.text.match(/\d+\.\d+\.\d+\.\d+/)[0];
-                return resolve(ip);
+                try {
+                    var ip = res.text.match(/\d+\.\d+\.\d+\.\d+/)[0];
+                    return resolve(ip);
+                }
+                catch (_a) {
+                    resolve(req.ip);
+                }
             });
         });
     })();

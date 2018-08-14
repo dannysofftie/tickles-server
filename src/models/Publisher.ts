@@ -41,6 +41,10 @@ const Publishers = new Schema({
         type: Number,
         required: false,
         default: 0.0
+    }, revenueBalance: {
+        type: Number,
+        default: 0,
+        required: false
     }
 }, { toObject: { virtuals: true } })
 

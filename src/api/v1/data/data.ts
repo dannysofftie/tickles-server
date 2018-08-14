@@ -6,6 +6,8 @@ import Advertisers from '../../../models/Advertisers'
 import Advertisements from '../../../models/Advertisements'
 import AdvertiserTransactions from '../../../models/AdvertiserTransactions';
 import Referrals from '../../../models/Referrals';
+import PublisherAdSession from '../../../models/PublisherAdSession';
+import Publisher from '../../../models/Publisher';
 
 export async function getBusinessCategories(req: Request, res: Response) {
     await BusinessCategories.insertMany([{
@@ -188,4 +190,35 @@ export async function retrieveCampaignStatistics(req: Request, res: Response) {
     ])
 
     return res.status(res.statusCode).json(data)
+}
+
+export async function retrievePublisherData(req: Request, res: Response) {
+
+    let pudData = await PublisherAdSession.aggregate([
+        {
+            $unwind: '$clientCookies'
+        }, {
+            $lookup: {
+                from: 'publishers',
+                localField: 'clientCookies.original-url',
+                foreignField: 'publisherAppUrl',
+                as: 'publisher'
+            }
+        }, {
+            $project: { 'publisher.publisherSsid': 1, visitorLocation: 1 }
+        }, {
+            $unwind: '$publisher'
+        }, {
+            $match: { 'publisher.publisherSsid': req.headers['client-ssid'] }
+        }, {
+            $project: { visitorLocation: 1, _id: 0 }
+        }
+    ])
+
+    return res.status(res.statusCode).json(pudData)
+}
+
+export async function deleteAdFromRecords(req: Request, res: Response) {
+    await Advertisements.findOneAndRemove({ _id: req.query['id'] }).exec()
+    res.status(res.statusCode).json({ status: 'success' })
 }

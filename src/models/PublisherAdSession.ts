@@ -54,6 +54,19 @@ const PublisherAdSession = new Schema({
     sessionDate: {
         type: Date,
         default: Date.now
+    }, visitorLocation: {
+        country_short: {
+            type: String
+        },
+        country_long: {
+            type: String
+        },
+        region: {
+            type: String
+        },
+        city: {
+            type: String
+        }
     }
 })
 
